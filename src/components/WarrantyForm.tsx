@@ -493,7 +493,10 @@ export default function WarrantyForm() {
 
           {/* DSGVO Checkbox */}
           <div className="space-y-2">
-            <div className="flex items-start gap-3">
+            <label
+              htmlFor="dsgvoAccepted"
+              className="flex gap-3 cursor-pointer group"
+            >
               <Checkbox
                 id="dsgvoAccepted"
                 checked={formData.dsgvoAccepted}
@@ -506,28 +509,25 @@ export default function WarrantyForm() {
                     setErrors((prev) => ({ ...prev, dsgvoAccepted: undefined }));
                   }
                 }}
-                className="mt-1 data-[state=checked]:bg-[#E30613] data-[state=checked]:border-[#E30613]"
+                className="mt-0.5 shrink-0 data-[state=checked]:bg-[#E30613] data-[state=checked]:border-[#E30613]"
                 aria-invalid={!!errors.dsgvoAccepted}
                 aria-describedby={errors.dsgvoAccepted ? "dsgvo-error" : undefined}
               />
-              <Label
-                htmlFor="dsgvoAccepted"
-                className="text-sm text-gray-700 leading-relaxed cursor-pointer"
-              >
+              <span className="text-sm text-gray-700 leading-relaxed">
                 Ich habe die{" "}
                 <a
                   href="https://www.tc.de/datenschutz"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#E30613] hover:underline"
+                  className="text-[#E30613] hover:underline font-medium"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   Datenschutzerklärung
                 </a>{" "}
-                zur Kenntnis genommen und bin damit einverstanden, dass die von
-                mir eingegebenen Daten elektronisch verarbeitet und gespeichert
-                werden. <span className="text-[#E30613]">*</span>
-              </Label>
-            </div>
+                zur Kenntnis genommen und bin damit einverstanden, dass die von mir eingegebenen Daten elektronisch verarbeitet und gespeichert werden.
+                <span className="text-[#E30613] ml-1">*</span>
+              </span>
+            </label>
             {errors.dsgvoAccepted && (
               <p id="dsgvo-error" className="text-sm text-red-500 flex items-center gap-1 ml-7">
                 <AlertCircle className="w-4 h-4" />
