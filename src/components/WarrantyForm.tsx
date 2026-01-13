@@ -189,14 +189,14 @@ export default function WarrantyForm() {
   }
 
   return (
-    <Card className="max-w-2xl mx-auto shadow-lg">
+    <Card className="max-w-2xl mx-auto shadow-lg border-0">
       <CardHeader className="bg-gradient-to-r from-[#E30613] to-[#C00510] text-white rounded-t-lg">
         <CardTitle className="text-2xl">Gewährleistungsanfrage</CardTitle>
         <CardDescription className="text-white/90">
           Füllen Sie das Formular aus, um eine Gewährleistungsanfrage zu stellen.
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-6">
+      <CardContent className="pt-6 bg-gray-50 rounded-b-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -509,7 +509,7 @@ export default function WarrantyForm() {
                     setErrors((prev) => ({ ...prev, dsgvoAccepted: undefined }));
                   }
                 }}
-                className="mt-0.5 shrink-0 data-[state=checked]:bg-[#E30613] data-[state=checked]:border-[#E30613]"
+                className="mt-0.5 shrink-0 border-gray-400 data-[state=checked]:bg-[#E30613] data-[state=checked]:border-[#E30613]"
                 aria-invalid={!!errors.dsgvoAccepted}
                 aria-describedby={errors.dsgvoAccepted ? "dsgvo-error" : undefined}
               />
