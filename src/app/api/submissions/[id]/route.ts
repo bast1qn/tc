@@ -16,7 +16,19 @@ export async function PATCH(
 
     // Status aktualisieren
     if (status !== undefined) {
-      const statusEnum = status.toUpperCase().replace(' ', '_') as Status;
+      // Mapping von deutschen Status-Namen zu Enum-Werten
+      const statusMapping: Record<string, Status> = {
+        'Offen': Status.OFFEN,
+        'In Bearbeitung': Status.IN_BEARBEITUNG,
+        'Erledigt': Status.ERLEDIGT,
+        'Mangel abgelehnt': Status.MAGEL_ABGELEHNT,
+      };
+
+      const statusEnum = statusMapping[status];
+      if (!statusEnum) {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+      }
+
       updateData.status = statusEnum;
       // Wenn Status auf ERLEDIGT gesetzt wird, erledigtAm auf jetzt setzen
       if (statusEnum === Status.ERLEDIGT) {

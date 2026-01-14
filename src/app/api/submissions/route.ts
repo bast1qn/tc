@@ -14,7 +14,14 @@ export async function GET(request: NextRequest) {
     const where: any = {};
 
     if (status && status !== 'Alle') {
-      where.status = status.toUpperCase().replace(' ', '_') as Status;
+      // Mapping von deutschen Status-Namen zu Enum-Werten
+      const statusMapping: Record<string, Status> = {
+        'Offen': Status.OFFEN,
+        'In Bearbeitung': Status.IN_BEARBEITUNG,
+        'Erledigt': Status.ERLEDIGT,
+        'Mangel abgelehnt': Status.MAGEL_ABGELEHNT,
+      };
+      where.status = statusMapping[status];
     }
 
     if (search) {
@@ -33,11 +40,19 @@ export async function GET(request: NextRequest) {
       orderBy: { [sortBy]: sortOrder },
     });
 
+    // Mapping von Enum-Werten zu deutschen Status-Namen
+    const statusReverseMapping: Record<string, string> = {
+      'OFFEN': 'Offen',
+      'IN_BEARBEITUNG': 'In Bearbeitung',
+      'ERLEDIGT': 'Erledigt',
+      'MAGEL_ABGELEHNT': 'Mangel abgelehnt',
+    };
+
     // Transform to match frontend types
     const transformed = submissions.map(s => ({
       ...s,
       timestamp: s.timestamp.toISOString(),
-      status: s.status.replace('_', ' ') as any,
+      status: statusReverseMapping[s.status] || s.status,
       ersteFrist: s.ersteFrist?.toISOString() || null,
       zweiteFrist: s.zweiteFrist?.toISOString() || null,
       erledigtAm: s.erledigtAm?.toISOString() || null,
