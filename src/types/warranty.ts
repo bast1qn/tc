@@ -1,4 +1,4 @@
-export type WarrantyStatus = 'Offen' | 'In Bearbeitung' | 'Erledigt';
+export type WarrantyStatus = 'Offen' | 'In Bearbeitung' | 'Erledigt' | 'Mangel abgelehnt';
 
 export interface UploadedFile {
   id?: string;           // Optional für Kompatibilität

@@ -57,6 +57,7 @@ const statusColors: Record<WarrantyStatus, string> = {
   Offen: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
   "In Bearbeitung": "bg-blue-100 text-blue-800 hover:bg-blue-200",
   Erledigt: "bg-green-100 text-green-800 hover:bg-green-200",
+  "Mangel abgelehnt": "bg-red-100 text-red-800 hover:bg-red-200",
 };
 
 export default function AdminDashboard() {
@@ -208,7 +209,7 @@ export default function AdminDashboard() {
           comparison = a.tcNummer.localeCompare(b.tcNummer, "de");
           break;
         case "status":
-          const statusOrder = { Offen: 0, "In Bearbeitung": 1, Erledigt: 2 };
+          const statusOrder = { Offen: 0, "In Bearbeitung": 1, Erledigt: 2, "Mangel abgelehnt": 3 };
           comparison = statusOrder[a.status] - statusOrder[b.status];
           break;
       }
@@ -274,6 +275,7 @@ export default function AdminDashboard() {
       offen: submissions.filter((s) => s.status === "Offen").length,
       inBearbeitung: submissions.filter((s) => s.status === "In Bearbeitung").length,
       erledigt: submissions.filter((s) => s.status === "Erledigt").length,
+      mangelAbgelehnt: submissions.filter((s) => s.status === "Mangel abgelehnt").length,
     };
   }, [submissions]);
 
@@ -307,7 +309,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">Gesamt</CardTitle>
@@ -340,6 +342,14 @@ export default function AdminDashboard() {
             <p className="text-3xl font-bold text-green-600">{stats.erledigt}</p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-red-600">Abgelehnt</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-red-600">{stats.mangelAbgelehnt}</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters and Actions */}
@@ -368,6 +378,7 @@ export default function AdminDashboard() {
                   <SelectItem value="Offen">Offen</SelectItem>
                   <SelectItem value="In Bearbeitung">In Bearbeitung</SelectItem>
                   <SelectItem value="Erledigt">Erledigt</SelectItem>
+                  <SelectItem value="Mangel abgelehnt">Mangel abgelehnt</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -492,6 +503,7 @@ export default function AdminDashboard() {
                             <SelectItem value="Offen">Offen</SelectItem>
                             <SelectItem value="In Bearbeitung">In Bearbeitung</SelectItem>
                             <SelectItem value="Erledigt">Erledigt</SelectItem>
+                            <SelectItem value="Mangel abgelehnt">Mangel abgelehnt</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
@@ -621,6 +633,7 @@ export default function AdminDashboard() {
                       <SelectItem value="Offen">Offen</SelectItem>
                       <SelectItem value="In Bearbeitung">In Bearbeitung</SelectItem>
                       <SelectItem value="Erledigt">Erledigt</SelectItem>
+                      <SelectItem value="Mangel abgelehnt">Mangel abgelehnt</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
