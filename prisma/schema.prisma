@@ -24,7 +24,7 @@ model Submission {
   haustyp             String?
   bauleitung          String?
   abnahme             String?
-  verantworlicheR     String?
+  verantwortlicher    String?
   gewerk              String?
   firma               String?
   dsgvoAccepted       Boolean   @default(true)

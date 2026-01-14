@@ -31,7 +31,7 @@ export interface WarrantySubmission {
   haustyp?: string | null;
   bauleitung?: string | null;
   abnahme?: string | null;
-  verantworlicheR?: string | null;
+  verantwortlicher?: string | null;
   gewerk?: string | null;
   firma?: string | null;
 }

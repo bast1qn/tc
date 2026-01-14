@@ -478,7 +478,7 @@ export default function AdminDashboard() {
                         {submission.abnahme || "-"}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm">
-                        {submission.verantworlicheR || "-"}
+                        {submission.verantwortlicher || "-"}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm">
                         {submission.gewerk || "-"}
