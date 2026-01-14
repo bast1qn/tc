@@ -28,6 +28,12 @@ export interface WarrantySubmission {
   ersteFrist?: string | null;
   zweiteFrist?: string | null;
   erledigtAm?: string | null;
+  haustyp?: string | null;
+  bauleitung?: string | null;
+  abnahme?: string | null;
+  verantworlicheR?: string | null;
+  gewerk?: string | null;
+  firma?: string | null;
 }
 
 export interface WarrantyFormData {

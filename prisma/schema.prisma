@@ -21,6 +21,12 @@ model Submission {
   email               String
   telefon             String
   beschreibung        String    @db.Text
+  haustyp             String?
+  bauleitung          String?
+  abnahme             String?
+  verantworlicheR     String?
+  gewerk              String?
+  firma               String?
   dsgvoAccepted       Boolean   @default(true)
   status              Status    @default(OFFEN)
   ersteFrist          DateTime?

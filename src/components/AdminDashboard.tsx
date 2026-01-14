@@ -415,24 +415,21 @@ export default function AdminDashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="whitespace-nowrap">Nr</TableHead>
                   <TableHead
                     className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
                     onClick={() => handleSort("tcNummer")}
                   >
-                    Nr <SortIcon field="tcNummer" />
+                    TC-N <SortIcon field="tcNummer" />
                   </TableHead>
-                  <TableHead
-                    className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
-                    onClick={() => handleSort("timestamp")}
-                  >
-                    Eingang <SortIcon field="timestamp" />
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => handleSort("nachname")}
-                  >
-                    Name <SortIcon field="nachname" />
-                  </TableHead>
+                  <TableHead className="whitespace-nowrap">Telefon</TableHead>
+                  <TableHead className="whitespace-nowrap">Haustyp</TableHead>
+                  <TableHead>Straße und Ort</TableHead>
+                  <TableHead className="whitespace-nowrap">Bauleitung</TableHead>
+                  <TableHead className="whitespace-nowrap">Abnahme</TableHead>
+                  <TableHead className="whitespace-nowrap">Verantwortliche/r</TableHead>
+                  <TableHead className="whitespace-nowrap">Gewerk</TableHead>
+                  <TableHead className="whitespace-nowrap">Firma</TableHead>
                   <TableHead className="whitespace-nowrap">1. Frist</TableHead>
                   <TableHead className="whitespace-nowrap">2. Frist</TableHead>
                   <TableHead className="whitespace-nowrap">Erledigt</TableHead>
@@ -449,30 +446,52 @@ export default function AdminDashboard() {
               <TableBody>
                 {filteredAndSortedSubmissions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-12 text-gray-500">
+                    <TableCell colSpan={16} className="text-center py-12 text-gray-500">
                       {submissions.length === 0
                         ? "Noch keine Anfragen vorhanden"
                         : "Keine Anfragen gefunden für die aktuellen Filter"}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredAndSortedSubmissions.map((submission) => (
+                  filteredAndSortedSubmissions.map((submission, index) => (
                     <TableRow key={submission.id} className="hover:bg-gray-50">
+                      <TableCell className="whitespace-nowrap font-medium">
+                        {index + 1}
+                      </TableCell>
                       <TableCell className="font-mono text-sm whitespace-nowrap">
                         {submission.tcNummer}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {formatTimestamp(submission.timestamp)}
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {submission.telefon || "-"}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {submission.vorname} {submission.nachname}
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {submission.haustyp || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        <div>{submission.strasseHausnummer}</div>
+                        <div className="text-gray-500">{submission.plz} {submission.ort}</div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {submission.bauleitung || "-"}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {submission.abnahme || "-"}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {submission.verantworlicheR || "-"}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {submission.gewerk || "-"}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {submission.firma || "-"}
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
                         <DatePicker
                           value={submission.ersteFrist ? new Date(submission.ersteFrist) : undefined}
                           onChange={(date) => handleFristChange(submission.id, 'ersteFrist', date)}
                           placeholder="Auswählen..."
-                          className="w-[150px]"
+                          className="w-[120px]"
                         />
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
@@ -480,13 +499,13 @@ export default function AdminDashboard() {
                           value={submission.zweiteFrist ? new Date(submission.zweiteFrist) : undefined}
                           onChange={(date) => handleFristChange(submission.id, 'zweiteFrist', date)}
                           placeholder="Auswählen..."
-                          className="w-[150px]"
+                          className="w-[120px]"
                         />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="whitespace-nowrap text-sm">
                         {submission.erledigtAm ? formatTimestamp(submission.erledigtAm) : "-"}
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">
+                      <TableCell className="max-w-xs truncate text-sm">
                         {submission.beschreibung}
                       </TableCell>
                       <TableCell>
