@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-// SMTP Configuration
+// SMTP Configuration from environment variables
 const SMTP_CONFIG = {
-  host: 'w018c883.kasserver.com',
-  port: 587,
+  host: process.env.SMTP_HOST || 'w018c883.kasserver.com',
+  port: Number(process.env.SMTP_PORT) || 587,
   secure: false,
   auth: {
-    user: 'm07c2db3',
-    pass: 'SDSZAe4kik4fAfAKZ7nD',
+    user: process.env.SMTP_USER || 'm07c2db3',
+    pass: process.env.SMTP_PASSWORD || 'SDSZAe4kik4fAfAKZ7nD',
   },
 };
 
-const FROM_EMAIL = 'hilfe@hauswunsch24.de';
-const TO_EMAIL = 'hilfe@hauswunsch24.de';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'hilfe@hauswunsch24.de';
+const TO_EMAIL = process.env.EMAIL_TO || 'hilfe@hauswunsch24.de';
 
 interface EmailData {
   timestamp: string;

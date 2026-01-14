@@ -43,13 +43,10 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  getSubmissions,
-  updateSubmissionStatus,
-  deleteSubmission,
   formatTimestamp,
   formatFileSize,
-  StorageError,
 } from "@/lib/storage";
+import { submissionsAPI, APIError } from "@/lib/api-client";
 import type { WarrantySubmission, WarrantyStatus } from "@/types/warranty";
 
 type SortField = "timestamp" | "vorname" | "nachname" | "ort" | "status" | "tcNummer";
@@ -73,35 +70,39 @@ export default function AdminDashboard() {
   const [deleteConfirm, setDeleteConfirm] = useState<WarrantySubmission | null>(null);
   const [isExporting, setIsExporting] = useState(false);
 
-  const loadSubmissions = useCallback(() => {
+  const loadSubmissions = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = getSubmissions();
-      setSubmissions(data);
+      const data = await submissionsAPI.getAll({
+        status: statusFilter,
+        search: searchTerm,
+        sortBy: sortField,
+        sortOrder: sortDirection,
+      });
+      setSubmissions(data.submissions);
     } catch (err) {
-      const message = err instanceof StorageError ? err.message : "Fehler beim Laden der Daten";
+      const message = err instanceof APIError ? err.message : 'Fehler beim Laden der Daten';
       setError(message);
       toast.error(message);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [statusFilter, searchTerm, sortField, sortDirection]);
 
   useEffect(() => {
     loadSubmissions();
   }, [loadSubmissions]);
 
-  const handleStatusChange = (id: string, newStatus: WarrantyStatus) => {
+  const handleStatusChange = async (id: string, newStatus: WarrantyStatus) => {
     try {
-      updateSubmissionStatus(id, newStatus);
+      await submissionsAPI.updateStatus(id, newStatus);
       setSubmissions((prev) =>
         prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
       );
       toast.success(`Status auf "${newStatus}" geändert`);
     } catch (err) {
-      const message = err instanceof StorageError ? err.message : "Fehler beim Aktualisieren";
-      toast.error(message);
+      toast.error('Fehler beim Aktualisieren');
     }
   };
 
@@ -109,16 +110,15 @@ export default function AdminDashboard() {
     setDeleteConfirm(submission);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteConfirm) return;
     try {
-      deleteSubmission(deleteConfirm.id);
+      await submissionsAPI.delete(deleteConfirm.id);
       setSubmissions((prev) => prev.filter((s) => s.id !== deleteConfirm.id));
       toast.success("Anfrage wurde gelöscht");
       setDeleteConfirm(null);
     } catch (err) {
-      const message = err instanceof StorageError ? err.message : "Fehler beim Löschen";
-      toast.error(message);
+      toast.error('Fehler beim Löschen');
     }
   };
 
@@ -555,8 +555,10 @@ export default function AdminDashboard() {
                       {selectedSubmission.files.map((file, index) => (
                         <a
                           key={index}
-                          href={file.dataUrl}
+                          href={file.url || file.dataUrl}
                           download={file.name}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="flex items-center gap-2 p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
                         >
                           <FileImage className="w-5 h-5 text-gray-500" />

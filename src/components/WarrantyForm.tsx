@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { addSubmission, formatFileSize } from "@/lib/storage";
+import { formatFileSize } from "@/lib/storage";
+import { submissionsAPI } from "@/lib/api-client";
 import type { WarrantyFormData, FormErrors } from "@/types/warranty";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -31,6 +32,7 @@ const initialFormData: WarrantyFormData = {
 
 export default function WarrantyForm() {
   const [formData, setFormData] = useState<WarrantyFormData>(initialFormData);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -111,10 +113,7 @@ export default function WarrantyForm() {
       });
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      files: [...prev.files, ...validFiles],
-    }));
+    setUploadedFiles((prev) => [...prev, ...validFiles]);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -122,10 +121,7 @@ export default function WarrantyForm() {
   };
 
   const removeFile = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      files: prev.files.filter((_, i) => i !== index),
-    }));
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -139,70 +135,37 @@ export default function WarrantyForm() {
     setIsSubmitting(true);
 
     try {
-      // Save to localStorage first
-      const submission = await addSubmission(formData);
-      console.log("Data saved to localStorage:", submission.id);
+      const formDataToSend = new FormData();
 
-      // Prepare email data
-      const emailData = {
-        timestamp: submission.timestamp,
-        vorname: formData.vorname,
-        nachname: formData.nachname,
-        strasseHausnummer: formData.strasseHausnummer,
-        plz: formData.plz,
-        ort: formData.ort,
-        tcNummer: formData.tcNummer,
-        email: formData.email,
-        telefon: formData.telefon,
-        beschreibung: formData.beschreibung,
-        fileNames: formData.files.map(f => f.name),
-      };
-
-      // Send email notification
-      try {
-        console.log("Sending email notification...");
-        const emailResponse = await fetch("/api/send-email", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(emailData),
-        });
-
-        const emailResult = await emailResponse.json();
-
-        if (!emailResponse.ok) {
-          console.error("Email sending failed:", emailResult);
-          toast.warning("Meldung gespeichert, aber E-Mail-Versand fehlgeschlagen", {
-            description: "Ihre Daten wurden lokal gespeichert, aber die E-Mail-Benachrichtigung konnte nicht versendet werden.",
-          });
-        } else {
-          console.log("Email sent successfully:", emailResult);
-          toast.success("Ihre Meldung wurde erfolgreich übermittelt und per E-Mail bestätigt", {
-            description: "Wir werden uns zeitnah bei Ihnen melden.",
-          });
+      // Alle Formularfelder hinzufügen
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key !== 'files') {
+          formDataToSend.append(key, String(value));
         }
-      } catch (emailError) {
-        console.error("Email sending error:", emailError);
-        toast.warning("Meldung gespeichert, aber E-Mail-Versand fehlgeschlagen", {
-          description: "Ihre Daten wurden lokal gespeichert, aber die E-Mail-Benachrichtigung konnte nicht versendet werden.",
-        });
-      }
+      });
 
-      // Reset form and show success state
+      // Dateien hinzufügen
+      uploadedFiles.forEach(file => {
+        formDataToSend.append('files', file);
+      });
+
+      // API Call
+      await submissionsAPI.create(formDataToSend);
+
+      toast.success("Ihre Meldung wurde erfolgreich übermittelt", {
+        description: "Wir werden uns zeitnah bei Ihnen melden.",
+      });
+
+      // Reset
       setIsSuccess(true);
       setFormData(initialFormData);
+      setUploadedFiles([]);
 
-      setTimeout(() => {
-        setIsSuccess(false);
-      }, 5000);
+      setTimeout(() => setIsSuccess(false), 5000);
     } catch (error) {
       console.error("Submission error:", error);
       toast.error("Fehler beim Übermitteln", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Bitte versuchen Sie es später erneut.",
+        description: error instanceof Error ? error.message : "Bitte versuchen Sie es später erneut.",
       });
     } finally {
       setIsSubmitting(false);
@@ -487,9 +450,9 @@ export default function WarrantyForm() {
             </div>
 
             {/* File List */}
-            {formData.files.length > 0 && (
+            {uploadedFiles.length > 0 && (
               <div className="mt-4 space-y-2">
-                {formData.files.map((file, index) => (
+                {uploadedFiles.map((file, index) => (
                   <div
                     key={`${file.name}-${index}`}
                     className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"

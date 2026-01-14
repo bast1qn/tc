@@ -1,10 +1,13 @@
 export type WarrantyStatus = 'Offen' | 'In Bearbeitung' | 'Erledigt';
 
 export interface UploadedFile {
+  id?: string;           // Optional für Kompatibilität
   name: string;
   type: string;
   size: number;
-  dataUrl: string;
+  url?: string;          // Blob URL (statt dataUrl)
+  dataUrl?: string;      // Behalten für Rückwärtskompatibilität
+  uploadedAt?: string;
 }
 
 export interface WarrantySubmission {
