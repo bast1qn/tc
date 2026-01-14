@@ -25,6 +25,9 @@ export interface WarrantySubmission {
   files: UploadedFile[];
   dsgvoAccepted: boolean;
   status: WarrantyStatus;
+  ersteFrist?: string | null;
+  zweiteFrist?: string | null;
+  erledigtAm?: string | null;
 }
 
 export interface WarrantyFormData {

@@ -42,6 +42,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/calendar";
 import {
   formatTimestamp,
   formatFileSize,
@@ -98,11 +99,45 @@ export default function AdminDashboard() {
     try {
       await submissionsAPI.updateStatus(id, newStatus);
       setSubmissions((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
+        prev.map((s) => {
+          if (s.id === id) {
+            const updates: Partial<WarrantySubmission> = { status: newStatus };
+            // Setze erledigtAm wenn Status auf "Erledigt" geändert wird
+            if (newStatus === "Erledigt" && !s.erledigtAm) {
+              updates.erledigtAm = new Date().toISOString();
+            }
+            return { ...s, ...updates };
+          }
+          return s;
+        })
       );
       toast.success(`Status auf "${newStatus}" geändert`);
     } catch (err) {
       toast.error('Fehler beim Aktualisieren');
+    }
+  };
+
+  const handleFristChange = async (
+    id: string,
+    field: 'ersteFrist' | 'zweiteFrist',
+    date: Date | undefined
+  ) => {
+    try {
+      const dateString = date ? date.toISOString() : null;
+      await submissionsAPI.updateFristen(
+        id,
+        field === 'ersteFrist' ? dateString : undefined,
+        field === 'zweiteFrist' ? dateString : undefined
+      );
+
+      setSubmissions((prev) =>
+        prev.map((s) =>
+          s.id === id ? { ...s, [field]: dateString } : s
+        )
+      );
+      toast.success(`${field === 'ersteFrist' ? '1. Frist' : '2. Frist'} aktualisiert`);
+    } catch (err) {
+      toast.error('Fehler beim Aktualisieren der Frist');
     }
   };
 
@@ -370,34 +405,29 @@ export default function AdminDashboard() {
               <TableHeader>
                 <TableRow>
                   <TableHead
-                    className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => handleSort("timestamp")}
+                    className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
+                    onClick={() => handleSort("tcNummer")}
                   >
-                    Datum <SortIcon field="timestamp" />
+                    Nr <SortIcon field="tcNummer" />
                   </TableHead>
                   <TableHead
-                    className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => handleSort("vorname")}
+                    className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
+                    onClick={() => handleSort("timestamp")}
                   >
-                    Vorname <SortIcon field="vorname" />
+                    Eingang <SortIcon field="timestamp" />
                   </TableHead>
                   <TableHead
                     className="cursor-pointer hover:bg-gray-50"
                     onClick={() => handleSort("nachname")}
                   >
-                    Nachname <SortIcon field="nachname" />
+                    Name <SortIcon field="nachname" />
                   </TableHead>
-                  <TableHead className="hidden lg:table-cell">Adresse</TableHead>
+                  <TableHead className="whitespace-nowrap">1. Frist</TableHead>
+                  <TableHead className="whitespace-nowrap">2. Frist</TableHead>
+                  <TableHead className="whitespace-nowrap">Erledigt</TableHead>
+                  <TableHead>Beschreibung</TableHead>
                   <TableHead
-                    className="cursor-pointer hover:bg-gray-50 hidden md:table-cell"
-                    onClick={() => handleSort("tcNummer")}
-                  >
-                    TC-Nr. <SortIcon field="tcNummer" />
-                  </TableHead>
-                  <TableHead className="hidden xl:table-cell">E-Mail</TableHead>
-                  <TableHead className="text-center hidden sm:table-cell">Dateien</TableHead>
-                  <TableHead
-                    className="cursor-pointer hover:bg-gray-50"
+                    className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
                     onClick={() => handleSort("status")}
                   >
                     Status <SortIcon field="status" />
@@ -417,34 +447,36 @@ export default function AdminDashboard() {
                 ) : (
                   filteredAndSortedSubmissions.map((submission) => (
                     <TableRow key={submission.id} className="hover:bg-gray-50">
-                      <TableCell className="font-medium whitespace-nowrap">
-                        {formatTimestamp(submission.timestamp)}
-                      </TableCell>
-                      <TableCell>{submission.vorname}</TableCell>
-                      <TableCell>{submission.nachname}</TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        <div className="text-sm">
-                          <p>{submission.strasseHausnummer}</p>
-                          <p className="text-gray-500">
-                            {submission.plz} {submission.ort}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell font-mono text-sm">
+                      <TableCell className="font-mono text-sm whitespace-nowrap">
                         {submission.tcNummer}
                       </TableCell>
-                      <TableCell className="hidden xl:table-cell text-sm">
-                        {submission.email}
+                      <TableCell className="whitespace-nowrap">
+                        {formatTimestamp(submission.timestamp)}
                       </TableCell>
-                      <TableCell className="text-center hidden sm:table-cell">
-                        {submission.files.length > 0 ? (
-                          <Badge variant="secondary" className="gap-1">
-                            <FileImage className="w-3 h-3" />
-                            {submission.files.length}
-                          </Badge>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                      <TableCell className="whitespace-nowrap">
+                        {submission.vorname} {submission.nachname}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <DatePicker
+                          value={submission.ersteFrist ? new Date(submission.ersteFrist) : undefined}
+                          onChange={(date) => handleFristChange(submission.id, 'ersteFrist', date)}
+                          placeholder="Auswählen..."
+                          className="w-[150px]"
+                        />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <DatePicker
+                          value={submission.zweiteFrist ? new Date(submission.zweiteFrist) : undefined}
+                          onChange={(date) => handleFristChange(submission.id, 'zweiteFrist', date)}
+                          placeholder="Auswählen..."
+                          className="w-[150px]"
+                        />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {submission.erledigtAm ? formatTimestamp(submission.erledigtAm) : "-"}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {submission.beschreibung}
                       </TableCell>
                       <TableCell>
                         <Select

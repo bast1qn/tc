@@ -10,8 +10,8 @@ generator client {
 }
 
 model Submission {
-  id                  String   @id @default(uuid())
-  timestamp           DateTime @default(now())
+  id                  String    @id @default(uuid())
+  timestamp           DateTime  @default(now())
   vorname             String
   nachname            String
   strasseHausnummer   String
@@ -20,11 +20,14 @@ model Submission {
   tcNummer            String
   email               String
   telefon             String
-  beschreibung        String   @db.Text
-  dsgvoAccepted       Boolean  @default(true)
-  status              Status   @default(OFFEN)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  beschreibung        String    @db.Text
+  dsgvoAccepted       Boolean   @default(true)
+  status              Status    @default(OFFEN)
+  ersteFrist          DateTime?
+  zweiteFrist         DateTime?
+  erledigtAm          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   files               File[]
 

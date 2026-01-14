@@ -9,13 +9,33 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const { status } = await request.json();
+    const body = await request.json();
+    const { status, ersteFrist, zweiteFrist } = body;
 
-    const statusEnum = status.toUpperCase().replace(' ', '_') as Status;
+    const updateData: any = {};
+
+    // Status aktualisieren
+    if (status !== undefined) {
+      const statusEnum = status.toUpperCase().replace(' ', '_') as Status;
+      updateData.status = statusEnum;
+      // Wenn Status auf ERLEDIGT gesetzt wird, erledigtAm auf jetzt setzen
+      if (statusEnum === Status.ERLEDIGT) {
+        updateData.erledigtAm = new Date();
+      }
+    }
+
+    // Fristen aktualisieren
+    if (ersteFrist !== undefined) {
+      updateData.ersteFrist = ersteFrist ? new Date(ersteFrist) : null;
+    }
+
+    if (zweiteFrist !== undefined) {
+      updateData.zweiteFrist = zweiteFrist ? new Date(zweiteFrist) : null;
+    }
 
     const submission = await prisma.submission.update({
       where: { id },
-      data: { status: statusEnum },
+      data: updateData,
       include: { files: true },
     });
 

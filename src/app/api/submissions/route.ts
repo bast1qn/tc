@@ -38,6 +38,9 @@ export async function GET(request: NextRequest) {
       ...s,
       timestamp: s.timestamp.toISOString(),
       status: s.status.replace('_', ' ') as any,
+      ersteFrist: s.ersteFrist?.toISOString() || null,
+      zweiteFrist: s.zweiteFrist?.toISOString() || null,
+      erledigtAm: s.erledigtAm?.toISOString() || null,
       files: s.files.map(f => ({
         id: f.id,
         name: f.name,
