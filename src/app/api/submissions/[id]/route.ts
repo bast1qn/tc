@@ -5,15 +5,16 @@ import { Status } from '@prisma/client';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { status } = await request.json();
 
     const statusEnum = status.toUpperCase().replace(' ', '_') as Status;
 
     const submission = await prisma.submission.update({
-      where: { id: params.id },
+      where: { id },
       data: { status: statusEnum },
       include: { files: true },
     });
@@ -27,11 +28,13 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const submission = await prisma.submission.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { files: true },
     });
 
@@ -51,7 +54,7 @@ export async function DELETE(
 
     // Delete submission (cascades to file records)
     await prisma.submission.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });
