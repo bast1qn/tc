@@ -139,12 +139,59 @@ export default function WarrantyForm() {
     setIsSubmitting(true);
 
     try {
-      await addSubmission(formData);
+      // Save to localStorage first
+      const submission = await addSubmission(formData);
+      console.log("Data saved to localStorage:", submission.id);
+
+      // Prepare email data
+      const emailData = {
+        timestamp: submission.timestamp,
+        vorname: formData.vorname,
+        nachname: formData.nachname,
+        strasseHausnummer: formData.strasseHausnummer,
+        plz: formData.plz,
+        ort: formData.ort,
+        tcNummer: formData.tcNummer,
+        email: formData.email,
+        telefon: formData.telefon,
+        beschreibung: formData.beschreibung,
+        fileNames: formData.files.map(f => f.name),
+      };
+
+      // Send email notification
+      try {
+        console.log("Sending email notification...");
+        const emailResponse = await fetch("/api/send-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(emailData),
+        });
+
+        const emailResult = await emailResponse.json();
+
+        if (!emailResponse.ok) {
+          console.error("Email sending failed:", emailResult);
+          toast.warning("Meldung gespeichert, aber E-Mail-Versand fehlgeschlagen", {
+            description: "Ihre Daten wurden lokal gespeichert, aber die E-Mail-Benachrichtigung konnte nicht versendet werden.",
+          });
+        } else {
+          console.log("Email sent successfully:", emailResult);
+          toast.success("Ihre Meldung wurde erfolgreich übermittelt und per E-Mail bestätigt", {
+            description: "Wir werden uns zeitnah bei Ihnen melden.",
+          });
+        }
+      } catch (emailError) {
+        console.error("Email sending error:", emailError);
+        toast.warning("Meldung gespeichert, aber E-Mail-Versand fehlgeschlagen", {
+          description: "Ihre Daten wurden lokal gespeichert, aber die E-Mail-Benachrichtigung konnte nicht versendet werden.",
+        });
+      }
+
+      // Reset form and show success state
       setIsSuccess(true);
       setFormData(initialFormData);
-      toast.success("Ihre Anfrage wurde erfolgreich übermittelt!", {
-        description: "Wir werden uns zeitnah bei Ihnen melden.",
-      });
 
       setTimeout(() => {
         setIsSuccess(false);

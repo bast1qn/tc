@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <body className={`${outfit.variable} antialiased min-h-screen`}>
+      <body className={`${outfit.variable} antialiased min-h-screen`} suppressHydrationWarning>
         {children}
         <Toaster position="top-center" richColors />
       </body>
