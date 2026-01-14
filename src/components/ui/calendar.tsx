@@ -18,6 +18,7 @@ interface CalendarProps {
   selected?: Date
   onSelect?: (date: Date | undefined) => void
   className?: string
+  initialFocus?: boolean
 }
 
 function Calendar({
