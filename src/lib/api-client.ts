@@ -63,6 +63,12 @@ export const submissionsAPI = {
       body: JSON.stringify({ ersteFrist, zweiteFrist }),
     }),
 
+  updateField: (id: string, field: string, value: string | null) =>
+    fetchAPI<{ submission: WarrantySubmission }>(`/api/submissions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ [field]: value }),
+    }),
+
   delete: (id: string) =>
     fetchAPI<{ success: boolean }>(`/api/submissions/${id}`, {
       method: 'DELETE',

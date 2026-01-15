@@ -54,11 +54,77 @@ type SortField = "timestamp" | "vorname" | "nachname" | "ort" | "status" | "tcNu
 type SortDirection = "asc" | "desc";
 
 const statusColors: Record<WarrantyStatus, string> = {
-  Offen: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+  Offen: "bg-red-100 text-red-800 hover:bg-red-200",
   "In Bearbeitung": "bg-blue-100 text-blue-800 hover:bg-blue-200",
   Erledigt: "bg-green-100 text-green-800 hover:bg-green-200",
-  "Mangel abgelehnt": "bg-red-100 text-red-800 hover:bg-red-200",
+  "Mangel abgelehnt": "bg-gray-100 text-gray-800 hover:bg-gray-200",
 };
+
+const BAULEITUNG_OPTIONS = [
+  "Daniel Mordass",
+  "Jens Kohnert",
+  "Markus Wünsch",
+];
+
+const VERANTWORTLICHER_OPTIONS = [
+  "Daniel Mordass",
+  "Jens Kohnert",
+  "Markus Wünsch",
+  "Thomas Wötzel",
+];
+
+const GEWERK_OPTIONS = [
+  "Außenputz",
+  "Balkone",
+  "Dachdeckung",
+  "Dachstuhl",
+  "Elektro",
+  "Estrich",
+  "Fenster",
+  "Fliesen",
+  "Heizung/Sanitär",
+  "Hochbau",
+  "Innenputz",
+  "Innentüren",
+  "Lüftung",
+  "Tiefbau",
+  "Treppen",
+  "Trockenbau",
+];
+
+const FIRMA_OPTIONS = [
+  "Arndt",
+  "Bauconstruct",
+  "Bauservice Zwenkau",
+  "Bergander",
+  "BMB",
+  "Breman",
+  "Cierpinski",
+  "Döhler",
+  "Enick",
+  "Estrichteam",
+  "Gaedtke",
+  "Guttenberger",
+  "Happke",
+  "Harrandt",
+  "HIB",
+  "HIT",
+  "Hoppe & Kant",
+  "Hüther",
+  "Kieburg",
+  "Krieg",
+  "Lunos",
+  "MoJé Bau",
+  "Pluggit",
+  "Raum + Areal",
+  "Salomon",
+  "Stoof",
+  "Streubel",
+  "TMP",
+  "Treppenmeister",
+  "UDIPAN",
+  "Werner",
+];
 
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState<WarrantySubmission[]>([]);
@@ -139,6 +205,35 @@ export default function AdminDashboard() {
       toast.success(`${field === 'ersteFrist' ? '1. Frist' : '2. Frist'} aktualisiert`);
     } catch (err) {
       toast.error('Fehler beim Aktualisieren der Frist');
+    }
+  };
+
+  const handleAbnahmeChange = async (id: string, date: Date | undefined) => {
+    try {
+      const dateString = date ? date.toISOString().split('T')[0] : null;
+      await submissionsAPI.updateField(id, 'abnahme', dateString);
+      setSubmissions((prev) =>
+        prev.map((s) =>
+          s.id === id ? { ...s, abnahme: dateString } : s
+        )
+      );
+      toast.success('Abnahme aktualisiert');
+    } catch (err) {
+      toast.error('Fehler beim Aktualisieren der Abnahme');
+    }
+  };
+
+  const handleFieldChange = async (id: string, field: string, value: string) => {
+    try {
+      await submissionsAPI.updateField(id, field, value);
+      setSubmissions((prev) =>
+        prev.map((s) =>
+          s.id === id ? { ...s, [field]: value } : s
+        )
+      );
+      toast.success(`${field} aktualisiert`);
+    } catch (err) {
+      toast.error(`Fehler beim Aktualisieren von ${field}`);
     }
   };
 
@@ -320,10 +415,10 @@ export default function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-yellow-600">Offen</CardTitle>
+            <CardTitle className="text-sm font-medium text-red-600">Offen</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-yellow-600">{stats.offen}</p>
+            <p className="text-3xl font-bold text-red-600">{stats.offen}</p>
           </CardContent>
         </Card>
         <Card>
@@ -344,10 +439,10 @@ export default function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-red-600">Abgelehnt</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">Abgelehnt</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-red-600">{stats.mangelAbgelehnt}</p>
+            <p className="text-3xl font-bold text-gray-600">{stats.mangelAbgelehnt}</p>
           </CardContent>
         </Card>
       </div>
@@ -471,20 +566,89 @@ export default function AdminDashboard() {
                         <div>{submission.strasseHausnummer}</div>
                         <div className="text-gray-500">{submission.plz} {submission.ort}</div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {submission.bauleitung || "-"}
+                      <TableCell className="whitespace-nowrap">
+                        <Select
+                          value={submission.bauleitung || ""}
+                          onValueChange={(value) =>
+                            handleFieldChange(submission.id, 'bauleitung', value)
+                          }
+                        >
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Auswählen..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {BAULEITUNG_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {submission.abnahme || "-"}
+                      <TableCell className="whitespace-nowrap">
+                        <DatePicker
+                          value={submission.abnahme ? new Date(submission.abnahme) : undefined}
+                          onChange={(date) => handleAbnahmeChange(submission.id, date)}
+                          placeholder="Auswählen..."
+                          className="w-[120px]"
+                        />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {submission.verantwortlicher || "-"}
+                      <TableCell className="whitespace-nowrap">
+                        <Select
+                          value={submission.verantwortlicher || ""}
+                          onValueChange={(value) =>
+                            handleFieldChange(submission.id, 'verantwortlicher', value)
+                          }
+                        >
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Auswählen..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VERANTWORTLICHER_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {submission.gewerk || "-"}
+                      <TableCell className="whitespace-nowrap">
+                        <Select
+                          value={submission.gewerk || ""}
+                          onValueChange={(value) =>
+                            handleFieldChange(submission.id, 'gewerk', value)
+                          }
+                        >
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder="Auswählen..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GEWERK_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {submission.firma || "-"}
+                      <TableCell className="whitespace-nowrap">
+                        <Select
+                          value={submission.firma || ""}
+                          onValueChange={(value) =>
+                            handleFieldChange(submission.id, 'firma', value)
+                          }
+                        >
+                          <SelectTrigger className="w-[130px]">
+                            <SelectValue placeholder="Auswählen..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FIRMA_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
                         <DatePicker

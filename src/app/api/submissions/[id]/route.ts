@@ -10,7 +10,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status, ersteFrist, zweiteFrist } = body;
+    const { status, ersteFrist, zweiteFrist, bauleitung, verantwortlicher, gewerk, firma, abnahme } = body;
 
     const updateData: any = {};
 
@@ -43,6 +43,27 @@ export async function PATCH(
 
     if (zweiteFrist !== undefined) {
       updateData.zweiteFrist = zweiteFrist ? new Date(zweiteFrist) : null;
+    }
+
+    // Neue Felder aktualisieren
+    if (bauleitung !== undefined) {
+      updateData.bauleitung = bauleitung || null;
+    }
+
+    if (verantwortlicher !== undefined) {
+      updateData.verantworliceR = verantwortlicher || null;
+    }
+
+    if (gewerk !== undefined) {
+      updateData.gewerk = gewerk || null;
+    }
+
+    if (firma !== undefined) {
+      updateData.firma = firma || null;
+    }
+
+    if (abnahme !== undefined) {
+      updateData.abnahme = abnahme || null;
     }
 
     const submission = await prisma.submission.update({
