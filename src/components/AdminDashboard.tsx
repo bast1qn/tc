@@ -163,23 +163,30 @@ export default function AdminDashboard() {
   }, [loadSubmissions]);
 
   const handleStatusChange = async (id: string, newStatus: WarrantyStatus) => {
+    // Optimistisches Update - sofortige UI-Aktualisierung
+    const previousSubmissions = [...submissions];
+    const previousValue = submissions.find(s => s.id === id)?.status;
+
+    setSubmissions((prev) =>
+      prev.map((s) => {
+        if (s.id === id) {
+          const updates: Partial<WarrantySubmission> = { status: newStatus };
+          // Setze erledigtAm wenn Status auf "Erledigt" geändert wird
+          if (newStatus === "Erledigt" && !s.erledigtAm) {
+            updates.erledigtAm = new Date().toISOString();
+          }
+          return { ...s, ...updates };
+        }
+        return s;
+      })
+    );
+
     try {
       await submissionsAPI.updateStatus(id, newStatus);
-      setSubmissions((prev) =>
-        prev.map((s) => {
-          if (s.id === id) {
-            const updates: Partial<WarrantySubmission> = { status: newStatus };
-            // Setze erledigtAm wenn Status auf "Erledigt" geändert wird
-            if (newStatus === "Erledigt" && !s.erledigtAm) {
-              updates.erledigtAm = new Date().toISOString();
-            }
-            return { ...s, ...updates };
-          }
-          return s;
-        })
-      );
       toast.success(`Status auf "${newStatus}" geändert`);
     } catch (err) {
+      // Bei Fehler wiederherstellen
+      setSubmissions(previousSubmissions);
       toast.error('Fehler beim Aktualisieren');
     }
   };
@@ -189,50 +196,64 @@ export default function AdminDashboard() {
     field: 'ersteFrist' | 'zweiteFrist',
     date: Date | undefined
   ) => {
+    // Optimistisches Update
+    const previousSubmissions = [...submissions];
+    const dateString = date ? date.toISOString() : null;
+
+    setSubmissions((prev) =>
+      prev.map((s) =>
+        s.id === id ? { ...s, [field]: dateString } : s
+      )
+    );
+
     try {
-      const dateString = date ? date.toISOString() : null;
       await submissionsAPI.updateFristen(
         id,
         field === 'ersteFrist' ? dateString : undefined,
         field === 'zweiteFrist' ? dateString : undefined
       );
-
-      setSubmissions((prev) =>
-        prev.map((s) =>
-          s.id === id ? { ...s, [field]: dateString } : s
-        )
-      );
       toast.success(`${field === 'ersteFrist' ? '1. Frist' : '2. Frist'} aktualisiert`);
     } catch (err) {
+      setSubmissions(previousSubmissions);
       toast.error('Fehler beim Aktualisieren der Frist');
     }
   };
 
   const handleAbnahmeChange = async (id: string, date: Date | undefined) => {
+    // Optimistisches Update
+    const previousSubmissions = [...submissions];
+    const dateString = date ? date.toISOString().split('T')[0] : null;
+
+    setSubmissions((prev) =>
+      prev.map((s) =>
+        s.id === id ? { ...s, abnahme: dateString } : s
+      )
+    );
+
     try {
-      const dateString = date ? date.toISOString().split('T')[0] : null;
       await submissionsAPI.updateField(id, 'abnahme', dateString);
-      setSubmissions((prev) =>
-        prev.map((s) =>
-          s.id === id ? { ...s, abnahme: dateString } : s
-        )
-      );
       toast.success('Abnahme aktualisiert');
     } catch (err) {
+      setSubmissions(previousSubmissions);
       toast.error('Fehler beim Aktualisieren der Abnahme');
     }
   };
 
   const handleFieldChange = async (id: string, field: string, value: string) => {
+    // Optimistisches Update
+    const previousSubmissions = [...submissions];
+
+    setSubmissions((prev) =>
+      prev.map((s) =>
+        s.id === id ? { ...s, [field]: value } : s
+      )
+    );
+
     try {
       await submissionsAPI.updateField(id, field, value);
-      setSubmissions((prev) =>
-        prev.map((s) =>
-          s.id === id ? { ...s, [field]: value } : s
-        )
-      );
       toast.success(`${field} aktualisiert`);
     } catch (err) {
+      setSubmissions(previousSubmissions);
       toast.error(`Fehler beim Aktualisieren von ${field}`);
     }
   };
