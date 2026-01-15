@@ -51,7 +51,7 @@ export async function PATCH(
     }
 
     if (verantwortlicher !== undefined) {
-      updateData.verantworliceR = verantwortlicher || null;
+      updateData.verantwortlicher = verantwortlicher || null;
     }
 
     if (gewerk !== undefined) {
