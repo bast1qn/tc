@@ -62,3 +62,42 @@ enum Status {
   ERLEDIGT
   MAGEL_ABGELEHNT
 }
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  name          String?
+  role          UserRole     @default(USER)
+  supabaseId    String?      @unique
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  activityLogs  ActivityLog[]
+
+  @@index([email])
+  @@index([role])
+  @@index([supabaseId])
+}
+
+model ActivityLog {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action        String
+  entityType    String
+  entityId      String
+  oldValue      String?  @db.Text
+  newValue      String?  @db.Text
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([createdAt(sort: Desc)])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}

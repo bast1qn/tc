@@ -49,6 +49,9 @@ import {
 } from "@/lib/storage";
 import { submissionsAPI, APIError } from "@/lib/api-client";
 import type { WarrantySubmission, WarrantyStatus } from "@/types/warranty";
+import { DefectsByGewerk } from "@/components/charts/DefectsByGewerk";
+import { DefectsByBauleitung } from "@/components/charts/DefectsByBauleitung";
+import { DefectsByFirma } from "@/components/charts/DefectsByFirma";
 
 type SortField = "timestamp" | "vorname" | "nachname" | "ort" | "status" | "tcNummer";
 type SortDirection = "asc" | "desc";
@@ -464,6 +467,37 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-gray-600">{stats.mangelAbgelehnt}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Section */}
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">Auswertungen</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Mängel nach Gewerk</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DefectsByGewerk />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Mängel nach Bauleitung</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DefectsByBauleitung />
+            </CardContent>
+          </Card>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Mängel nach Firma (pro Gewerk)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DefectsByFirma />
           </CardContent>
         </Card>
       </div>
