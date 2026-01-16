@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { prisma } from '@/lib/database'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -41,14 +42,13 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Check if user is admin
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('supabaseId', user.id)
-      .single()
+    // Check if user is admin using Prisma (not Supabase!)
+    const userRecord = await prisma.user.findUnique({
+      where: { supabaseId: user.id },
+      select: { role: true },
+    })
 
-    if (!userData || userData.role !== 'ADMIN') {
+    if (!userRecord || userRecord.role !== 'ADMIN') {
       // Redirect to home if not admin
       const url = request.nextUrl.clone()
       url.pathname = '/'
