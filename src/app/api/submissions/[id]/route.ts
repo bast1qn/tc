@@ -180,7 +180,7 @@ export async function DELETE(
           nachname: submission.nachname,
           status: submission.status,
         }),
-        newValue: null,
+        newValue: undefined,
         ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
         userAgent: request.headers.get('user-agent') || undefined,
       });
