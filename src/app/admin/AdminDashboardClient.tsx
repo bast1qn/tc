@@ -1,0 +1,152 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Loader2, Users, FileText, LogOut, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import AdminDashboard from "@/components/AdminDashboard";
+import UserManagement from "@/components/UserManagement";
+import { AdminRole } from "@prisma/client";
+
+interface AdminSession {
+  adminId: string;
+  username: string;
+  role: AdminRole;
+}
+
+export default function AdminDashboardClient() {
+  const router = useRouter();
+  const [session, setSession] = useState<AdminSession | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"submissions" | "users">("submissions");
+
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  const checkSession = async () => {
+    try {
+      const response = await fetch("/api/auth/admin/verify");
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/admin-login");
+          return;
+        }
+        throw new Error("Session-Prüfung fehlgeschlagen");
+      }
+
+      const data = await response.json();
+      setSession(data.admin);
+    } catch (error) {
+      console.error("Session check error:", error);
+      router.push("/admin-login");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/admin/logout", { method: "POST" });
+      toast.success("Erfolgreich abgemeldet");
+      router.push("/admin-login");
+    } catch (err) {
+      toast.error("Abmeldung fehlgeschlagen");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-[#E30613] mx-auto animate-spin mb-4" />
+          <p className="text-gray-600">Session wird überprüft...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-gray-600">
+              Eingeloggt als <span className="font-semibold">{session.username}</span>
+            </p>
+            <Badge
+              variant="outline"
+              className={
+                session.role === AdminRole.SUPER_ADMIN
+                  ? "bg-purple-100 text-purple-800 border-purple-200"
+                  : "bg-blue-100 text-blue-800 border-blue-200"
+              }
+            >
+              <Shield className="w-3 h-3 mr-1" />
+              {session.role === AdminRole.SUPER_ADMIN ? "Super Admin" : "Admin"}
+            </Badge>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setActiveTab(activeTab === "submissions" ? "users" : "submissions")}
+          >
+            {activeTab === "submissions" ? (
+              <>
+                <Users className="w-4 h-4 mr-2" />
+                Benutzer
+              </>
+            ) : (
+              <>
+                <FileText className="w-4 h-4 mr-2" />
+                Mängel
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="border-[#E30613] text-[#E30613] hover:bg-[#E30613] hover:text-white"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Abmelden
+          </Button>
+        </div>
+      </div>
+
+      {/* Tabs using Accordion */}
+      <Accordion type="single" value={activeTab} onValueChange={(v) => setActiveTab(v as "submissions" | "users")} className="w-full">
+        <AccordionItem value="submissions" className="border-none">
+          <AccordionTrigger className="hidden">Mängel verwalten</AccordionTrigger>
+          <AccordionContent className="pt-0">
+            <AdminDashboard />
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="users" className="border-none">
+          <AccordionTrigger className="hidden">Benutzer verwalten</AccordionTrigger>
+          <AccordionContent className="pt-0">
+            <UserManagement
+              currentUserId={session.adminId}
+              currentRole={session.role}
+            />
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      {/* Direct content display (no accordion visual) */}
+      {activeTab === "submissions" ? <AdminDashboard /> : <UserManagement currentUserId={session.adminId} currentRole={session.role} />}
+    </div>
+  );
+}

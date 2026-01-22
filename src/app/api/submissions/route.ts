@@ -119,7 +119,39 @@ export async function POST(request: NextRequest) {
       include: { files: true },
     });
 
-    // Send email notification
+    // Create customer account for tracking
+    try {
+      const { hash } = await import('bcrypt');
+      const tempPassword = generateTempPassword();
+      const passwordHash = await hash(tempPassword, 12);
+
+      await prisma.customer.create({
+        data: {
+          submissionId: submission.id,
+          email: submission.email,
+          tcNummer: submission.tcNummer,
+          passwordHash,
+        },
+      });
+
+      // Send confirmation email to customer with login credentials
+      await fetch(`${request.nextUrl.origin}/api/send-confirmation-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: submission.email,
+          vorname: submission.vorname,
+          nachname: submission.nachname,
+          tcNummer: submission.tcNummer,
+          tempPassword,
+        }),
+      });
+    } catch (customerError) {
+      console.error('Customer account creation failed:', customerError);
+      // Don't fail the submission if customer creation fails
+    }
+
+    // Send email notification to admin
     try {
       await fetch(`${request.nextUrl.origin}/api/send-email`, {
         method: 'POST',
@@ -140,4 +172,16 @@ export async function POST(request: NextRequest) {
     console.error('POST submission error:', error);
     return NextResponse.json({ error: 'Failed to create submission' }, { status: 500 });
   }
+}
+
+/**
+ * Generate a temporary password for new customers
+ */
+function generateTempPassword(): string {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let password = '';
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
 }
