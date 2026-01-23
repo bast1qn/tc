@@ -91,7 +91,7 @@ export default function PasswordChangeModal({
           oldPassword: (isForced || isForOtherUser) ? undefined : formData.oldPassword,
           newPassword: formData.newPassword,
           skipOldPasswordCheck: isForced || isForOtherUser,
-          targetAdminId: (isForced || isForOtherUser) ? adminId : undefined,
+          targetAdminId: isForOtherUser ? adminId : undefined,  // Only send targetAdminId when changing another user's password
         }),
       });
 
