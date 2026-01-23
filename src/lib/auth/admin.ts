@@ -239,7 +239,8 @@ export async function createAdminUser(input: {
 export async function changeAdminPassword(
   adminId: string,
   oldPassword: string,
-  newPassword: string
+  newPassword: string,
+  options?: { skipOldPasswordCheck?: boolean }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Get admin with password
@@ -252,10 +253,12 @@ export async function changeAdminPassword(
       return { success: false, error: 'Benutzer nicht gefunden' };
     }
 
-    // Verify old password
-    const isValid = await compare(oldPassword, admin.passwordHash);
-    if (!isValid) {
-      return { success: false, error: 'Aktuelles Passwort ist falsch' };
+    // Verify old password unless skipping
+    if (!options?.skipOldPasswordCheck) {
+      const isValid = await compare(oldPassword, admin.passwordHash);
+      if (!isValid) {
+        return { success: false, error: 'Aktuelles Passwort ist falsch' };
+      }
     }
 
     // Validate new password

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllAdminUsers, createAdminUser, deleteAdminUser, getAdminSession, requireSuperAdmin } from '@/lib/auth/admin';
+import { getAllAdminUsers, createAdminUser, deleteAdminUser, getAdminSession, verifyAdminSession } from '@/lib/auth/admin';
 import { AdminRole } from '@prisma/client';
 
 /**
@@ -33,16 +33,16 @@ export async function GET(request: NextRequest) {
  * Create new admin user
  * POST /api/auth/admin/users
  *
- * Body: { username: string, password: string, role: 'SUPER_ADMIN' | 'ADMIN' }
+ * Body: { username: string, password: string, role: 'SUPER_ADMIN' | 'ADMIN' | 'STAFF' }
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify session and super admin role
-    const result = await requireSuperAdmin();
+    // Verify session and role (ADMIN and SUPER_ADMIN can create users)
+    const sessionResult = await verifyAdminSession();
 
-    if (!result.valid || !result.admin) {
+    if (!sessionResult.valid || !sessionResult.admin) {
       return NextResponse.json(
-        { error: result.error || 'Nicht autorisiert' },
+        { error: sessionResult.error || 'Nicht autorisiert' },
         { status: 401 }
       );
     }
@@ -64,11 +64,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const adminRole = sessionResult.admin.role;
+
+    // STAFF cannot create users
+    if (adminRole === 'STAFF') {
+      return NextResponse.json(
+        { error: 'Mitarbeiter können keine Benutzer erstellen' },
+        { status: 403 }
+      );
+    }
+
+    // ADMIN can only create STAFF users
+    if (adminRole === 'ADMIN' && role !== 'STAFF') {
+      return NextResponse.json(
+        { error: 'Admins können nur Mitarbeiter erstellen' },
+        { status: 403 }
+      );
+    }
+
+    // Only SUPER_ADMIN can create SUPER_ADMIN and ADMIN users
+    if ((role === 'SUPER_ADMIN' || role === 'ADMIN') && adminRole !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { error: 'Nur Super-Admins können Admins erstellen' },
+        { status: 403 }
+      );
+    }
+
     const createResult = await createAdminUser({
       username,
       password,
       role,
-      createdBy: result.admin.adminId,
+      createdBy: sessionResult.admin.adminId,
     });
 
     if (!createResult.success) {

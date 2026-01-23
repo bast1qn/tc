@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminSession, changeAdminPassword } from '@/lib/auth/admin';
+import { AdminRole } from '@prisma/client';
 
 /**
  * Admin Change Password API
  * POST /api/auth/admin/change-password
  *
- * Body: { oldPassword: string, newPassword: string }
+ * Body: {
+ *   oldPassword?: string,
+ *   newPassword: string,
+ *   skipOldPasswordCheck?: boolean,
+ *   targetAdminId?: string  // For SUPER_ADMIN changing other users' passwords
+ * }
  */
 export async function POST(request: NextRequest) {
   try {
@@ -20,12 +26,23 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { oldPassword, newPassword } = body;
+    const { oldPassword, newPassword, skipOldPasswordCheck, targetAdminId } = body;
 
-    // Validate required fields
-    if (!oldPassword || !newPassword) {
+    // Determine target admin ID (for changing another user's password)
+    const targetId = targetAdminId || sessionResult.admin.adminId;
+
+    // Only SUPER_ADMIN can change other users' passwords
+    if (targetAdminId && sessionResult.admin.role !== AdminRole.SUPER_ADMIN) {
       return NextResponse.json(
-        { error: 'Altes und neues Passwort sind erforderlich' },
+        { error: 'Nur Super-Admins können Passwörter anderer ändern' },
+        { status: 403 }
+      );
+    }
+
+    // Validate new password
+    if (!newPassword) {
+      return NextResponse.json(
+        { error: 'Neues Passwort ist erforderlich' },
         { status: 400 }
       );
     }
@@ -38,11 +55,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Change password
+    // For changing own password, validate old password unless skipping
+    const isChangingOwnPassword = targetId === sessionResult.admin.adminId;
+    if (isChangingOwnPassword && !skipOldPasswordCheck && !oldPassword) {
+      return NextResponse.json(
+        { error: 'Aktuelles Passwort ist erforderlich' },
+        { status: 400 }
+      );
+    }
+
+    // Change password (admin changing another user's password skips old password check)
     const result = await changeAdminPassword(
-      sessionResult.admin.adminId,
-      oldPassword,
-      newPassword
+      targetId,
+      !isChangingOwnPassword || skipOldPasswordCheck ? newPassword : oldPassword,
+      newPassword,
+      { skipOldPasswordCheck: !isChangingOwnPassword || skipOldPasswordCheck }
     );
 
     if (!result.success) {

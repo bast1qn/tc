@@ -125,27 +125,7 @@ export default function AdminDashboardClient() {
         </div>
       </div>
 
-      {/* Tabs using Accordion */}
-      <Accordion type="single" value={activeTab} onValueChange={(v) => setActiveTab(v as "submissions" | "users")} className="w-full">
-        <AccordionItem value="submissions" className="border-none">
-          <AccordionTrigger className="hidden">Mängel verwalten</AccordionTrigger>
-          <AccordionContent className="pt-0">
-            <AdminDashboard />
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="users" className="border-none">
-          <AccordionTrigger className="hidden">Benutzer verwalten</AccordionTrigger>
-          <AccordionContent className="pt-0">
-            <UserManagement
-              currentUserId={session.adminId}
-              currentRole={session.role}
-            />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-
-      {/* Direct content display (no accordion visual) */}
+      {/* Direct content display */}
       {activeTab === "submissions" ? <AdminDashboard /> : <UserManagement currentUserId={session.adminId} currentRole={session.role} />}
     </div>
   );

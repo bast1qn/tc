@@ -75,7 +75,7 @@ export default function UserManagement({
   }>({
     username: "",
     password: "",
-    role: AdminRole.ADMIN,
+    role: currentRole === AdminRole.SUPER_ADMIN ? AdminRole.ADMIN : AdminRole.STAFF,
   });
 
   const loadUsers = useCallback(async () => {
@@ -177,7 +177,7 @@ export default function UserManagement({
   };
 
   const canDeleteUser = currentRole === AdminRole.SUPER_ADMIN;
-  const canCreateUser = currentRole === AdminRole.SUPER_ADMIN;
+  const canCreateUser = currentRole === AdminRole.SUPER_ADMIN || currentRole === AdminRole.ADMIN;
 
   const getRoleBadge = (role: AdminRole) => {
     if (role === AdminRole.SUPER_ADMIN) {
@@ -188,10 +188,18 @@ export default function UserManagement({
         </Badge>
       );
     }
+    if (role === AdminRole.ADMIN) {
+      return (
+        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+          <ShieldAlert className="w-3 h-3 mr-1" />
+          Admin
+        </Badge>
+      );
+    }
     return (
-      <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+      <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
         <ShieldAlert className="w-3 h-3 mr-1" />
-        Admin
+        Mitarbeiter
       </Badge>
     );
   };
@@ -347,10 +355,15 @@ export default function UserManagement({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="SUPER_ADMIN">
-                    Super Admin
-                  </SelectItem>
+                  {currentRole === AdminRole.SUPER_ADMIN ? (
+                    <>
+                      <SelectItem value="STAFF">Mitarbeiter</SelectItem>
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                      <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                    </>
+                  ) : (
+                    <SelectItem value="STAFF">Mitarbeiter</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -440,6 +453,7 @@ export default function UserManagement({
             loadUsers();
           }}
           isForced={false}
+          isForOtherUser={selectedUser.id !== currentUserId}
         />
       )}
     </>

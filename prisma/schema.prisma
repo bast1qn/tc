@@ -135,4 +135,5 @@ model AdminUser {
 enum AdminRole {
   SUPER_ADMIN
   ADMIN
+  STAFF
 }

@@ -22,6 +22,7 @@ interface PasswordChangeModalProps {
   onClose: () => void;
   onSuccess: () => void;
   isForced?: boolean;
+  isForOtherUser?: boolean;  // true when SUPER_ADMIN changes another user's password
 }
 
 export default function PasswordChangeModal({
@@ -31,6 +32,7 @@ export default function PasswordChangeModal({
   onClose,
   onSuccess,
   isForced = false,
+  isForOtherUser = false,
 }: PasswordChangeModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
@@ -52,7 +54,7 @@ export default function PasswordChangeModal({
   const validateForm = () => {
     const newErrors: typeof errors = {};
 
-    if (!formData.oldPassword && !isForced) {
+    if (!formData.oldPassword && !isForced && !isForOtherUser) {
       newErrors.oldPassword = "Aktuelles Passwort ist erforderlich";
     }
 
@@ -86,8 +88,10 @@ export default function PasswordChangeModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          oldPassword: isForced ? formData.newPassword : formData.oldPassword,
+          oldPassword: (isForced || isForOtherUser) ? undefined : formData.oldPassword,
           newPassword: formData.newPassword,
+          skipOldPasswordCheck: isForced || isForOtherUser,
+          targetAdminId: (isForced || isForOtherUser) ? adminId : undefined,
         }),
       });
 
@@ -118,7 +122,7 @@ export default function PasswordChangeModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={!isForced ? onClose : undefined}>
+    <Dialog open={isOpen} onOpenChange={!isForced && !isForOtherUser ? onClose : undefined}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -126,14 +130,16 @@ export default function PasswordChangeModal({
             {isForced ? "Passwort ändern" : "Passwort ändern"}
           </DialogTitle>
           <DialogDescription>
-            {isForced
+            {isForOtherUser
+              ? `Ändern Sie das Passwort für ${username}.`
+              : isForced
               ? "Dies ist Ihr erster Login. Bitte ändern Sie Ihr Passwort, um fortzufahren."
               : "Ändern Sie Ihr Passwort für den Admin-Zugang."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          {!isForced && (
+          {!isForced && !isForOtherUser && (
             <div className="space-y-2">
               <Label htmlFor="oldPassword">Aktuelles Passwort</Label>
               <div className="relative">
@@ -235,7 +241,7 @@ export default function PasswordChangeModal({
           </div>
 
           <DialogFooter className="gap-2">
-            {!isForced && (
+            {!isForced && !isForOtherUser && (
               <Button
                 type="button"
                 variant="outline"
