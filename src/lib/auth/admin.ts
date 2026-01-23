@@ -155,6 +155,7 @@ export function hasRequiredRole(userRole: AdminRole, requiredRole: AdminRole): b
   const roleHierarchy = {
     [AdminRole.SUPER_ADMIN]: 2,
     [AdminRole.ADMIN]: 1,
+    [AdminRole.STAFF]: 0,
   };
 
   return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
