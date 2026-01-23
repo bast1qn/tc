@@ -10,7 +10,7 @@ import { AdminRole } from '@prisma/client';
  *   oldPassword?: string,
  *   newPassword: string,
  *   skipOldPasswordCheck?: boolean,
- *   targetAdminId?: string  // For SUPER_ADMIN changing other users' passwords
+ *   targetAdminId?: string  // For ADMIN changing other users' passwords
  * }
  */
 export async function POST(request: NextRequest) {
@@ -31,10 +31,10 @@ export async function POST(request: NextRequest) {
     // Determine target admin ID (for changing another user's password)
     const targetId = targetAdminId || sessionResult.admin.adminId;
 
-    // Only SUPER_ADMIN can change other users' passwords
-    if (targetAdminId && sessionResult.admin.role !== AdminRole.SUPER_ADMIN) {
+    // Only ADMIN can change other users' passwords
+    if (targetAdminId && sessionResult.admin.role !== AdminRole.ADMIN) {
       return NextResponse.json(
-        { error: 'Nur Super-Admins können Passwörter anderer ändern' },
+        { error: 'Nur Admins können Passwörter anderer ändern' },
         { status: 403 }
       );
     }

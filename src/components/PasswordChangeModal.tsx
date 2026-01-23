@@ -22,7 +22,7 @@ interface PasswordChangeModalProps {
   onClose: () => void;
   onSuccess: () => void;
   isForced?: boolean;
-  isForOtherUser?: boolean;  // true when SUPER_ADMIN changes another user's password
+  isForOtherUser?: boolean;  // true when ADMIN changes another user's password
 }
 
 export default function PasswordChangeModal({

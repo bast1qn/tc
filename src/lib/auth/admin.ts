@@ -153,7 +153,6 @@ export async function verifyAdminSession(): Promise<{ valid: boolean; admin?: Ad
  */
 export function hasRequiredRole(userRole: AdminRole, requiredRole: AdminRole): boolean {
   const roleHierarchy = {
-    [AdminRole.SUPER_ADMIN]: 2,
     [AdminRole.ADMIN]: 1,
     [AdminRole.STAFF]: 0,
   };
@@ -162,17 +161,17 @@ export function hasRequiredRole(userRole: AdminRole, requiredRole: AdminRole): b
 }
 
 /**
- * Require super admin role
+ * Require admin role (full access)
  */
-export async function requireSuperAdmin(): Promise<{ valid: boolean; admin?: AdminSession; error?: string }> {
+export async function requireAdminRole(): Promise<{ valid: boolean; admin?: AdminSession; error?: string }> {
   const result = await verifyAdminSession();
 
   if (!result.valid || !result.admin) {
     return result;
   }
 
-  if (result.admin.role !== AdminRole.SUPER_ADMIN) {
-    return { valid: false, error: 'Nur Super-Admins haben Zugriff' };
+  if (result.admin.role !== AdminRole.ADMIN) {
+    return { valid: false, error: 'Nur Admins haben Zugriff' };
   }
 
   return { valid: true, admin: result.admin };

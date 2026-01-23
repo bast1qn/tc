@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
  * Create new admin user
  * POST /api/auth/admin/users
  *
- * Body: { username: string, password: string, role: 'SUPER_ADMIN' | 'ADMIN' | 'STAFF' }
+ * Body: { username: string, password: string, role: 'ADMIN' | 'STAFF' }
  */
 export async function POST(request: NextRequest) {
   try {
@@ -74,18 +74,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ADMIN can only create STAFF users
-    if (adminRole === 'ADMIN' && role !== 'STAFF') {
+    // Only ADMIN can create ADMIN users
+    if (role === 'ADMIN' && adminRole !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Admins können nur Mitarbeiter erstellen' },
-        { status: 403 }
-      );
-    }
-
-    // Only SUPER_ADMIN can create SUPER_ADMIN and ADMIN users
-    if ((role === 'SUPER_ADMIN' || role === 'ADMIN') && adminRole !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Nur Super-Admins können Admins erstellen' },
+        { error: 'Nur Admins können Admins erstellen' },
         { status: 403 }
       );
     }
@@ -129,10 +121,10 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Only SUPER_ADMIN can delete users
-    if (session.role !== AdminRole.SUPER_ADMIN) {
+    // Only ADMIN can delete users
+    if (session.role !== AdminRole.ADMIN) {
       return NextResponse.json(
-        { error: 'Nur Super-Admins können Benutzer löschen' },
+        { error: 'Nur Admins können Benutzer löschen' },
         { status: 403 }
       );
     }

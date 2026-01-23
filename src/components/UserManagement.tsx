@@ -75,7 +75,7 @@ export default function UserManagement({
   }>({
     username: "",
     password: "",
-    role: currentRole === AdminRole.SUPER_ADMIN ? AdminRole.ADMIN : AdminRole.STAFF,
+    role: AdminRole.STAFF,
   });
 
   const loadUsers = useCallback(async () => {
@@ -176,22 +176,14 @@ export default function UserManagement({
     setShowPasswordModal(true);
   };
 
-  const canDeleteUser = currentRole === AdminRole.SUPER_ADMIN;
-  const canCreateUser = currentRole === AdminRole.SUPER_ADMIN || currentRole === AdminRole.ADMIN;
+  const canDeleteUser = currentRole === AdminRole.ADMIN;
+  const canCreateUser = currentRole === AdminRole.ADMIN;
 
   const getRoleBadge = (role: AdminRole) => {
-    if (role === AdminRole.SUPER_ADMIN) {
-      return (
-        <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">
-          <Shield className="w-3 h-3 mr-1" />
-          Super Admin
-        </Badge>
-      );
-    }
     if (role === AdminRole.ADMIN) {
       return (
         <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-          <ShieldAlert className="w-3 h-3 mr-1" />
+          <Shield className="w-3 h-3 mr-1" />
           Admin
         </Badge>
       );
@@ -355,15 +347,8 @@ export default function UserManagement({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {currentRole === AdminRole.SUPER_ADMIN ? (
-                    <>
-                      <SelectItem value="STAFF">Mitarbeiter</SelectItem>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                    </>
-                  ) : (
-                    <SelectItem value="STAFF">Mitarbeiter</SelectItem>
-                  )}
+                  <SelectItem value="STAFF">Mitarbeiter</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -6,11 +6,11 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Start seeding...');
 
-  // Hash password for super admin
+  // Hash password for admin
   const passwordHash = await hash('admin123', 12);
 
-  // Create super admin user
-  const superAdmin = await prisma.adminUser.upsert({
+  // Create admin user
+  const admin = await prisma.adminUser.upsert({
     where: { username: 'Admin' },
     update: {
       passwordHash,
@@ -19,16 +19,16 @@ async function main() {
     create: {
       username: 'Admin',
       passwordHash,
-      role: AdminRole.SUPER_ADMIN,
+      role: AdminRole.ADMIN,
       mustChangePassword: true,
     },
   });
 
-  console.log('Created/updated super admin user:', {
-    id: superAdmin.id,
-    username: superAdmin.username,
-    role: superAdmin.role,
-    mustChangePassword: superAdmin.mustChangePassword,
+  console.log('Created/updated admin user:', {
+    id: admin.id,
+    username: admin.username,
+    role: admin.role,
+    mustChangePassword: admin.mustChangePassword,
   });
   console.log('Default credentials: Username: "Admin", Password: "admin123"');
   console.log('IMPORTANT: Change password after first login!');

@@ -87,13 +87,13 @@ export default function AdminDashboardClient() {
             <Badge
               variant="outline"
               className={
-                session.role === AdminRole.SUPER_ADMIN
-                  ? "bg-purple-100 text-purple-800 border-purple-200"
-                  : "bg-blue-100 text-blue-800 border-blue-200"
+                session.role === AdminRole.ADMIN
+                  ? "bg-blue-100 text-blue-800 border-blue-200"
+                  : "bg-green-100 text-green-800 border-green-200"
               }
             >
               <Shield className="w-3 h-3 mr-1" />
-              {session.role === AdminRole.SUPER_ADMIN ? "Super Admin" : "Admin"}
+              {session.role === AdminRole.ADMIN ? "Admin" : "Mitarbeiter"}
             </Badge>
           </div>
         </div>

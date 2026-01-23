@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminSession, requireSuperAdmin, createAdminUser, getAllAdminUsers, deleteAdminUser } from '@/lib/auth/admin';
+import { verifyAdminSession, requireAdminRole, createAdminUser, getAllAdminUsers, deleteAdminUser } from '@/lib/auth/admin';
 import { AdminRole } from '@prisma/client';
 
 /**
@@ -32,12 +32,12 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/admin/users
- * Create a new admin user (Super Admin only)
+ * Create a new admin user (Admin only)
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify super admin session
-    const sessionResult = await requireSuperAdmin();
+    // Verify admin session
+    const sessionResult = await requireAdminRole();
 
     if (!sessionResult.valid || !sessionResult.admin) {
       return NextResponse.json(
@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate role
-    const validRoles = [AdminRole.SUPER_ADMIN, AdminRole.ADMIN];
-    const adminRole = role || AdminRole.ADMIN;
+    const validRoles = [AdminRole.ADMIN, AdminRole.STAFF];
+    const adminRole = role || AdminRole.STAFF;
 
     if (!validRoles.includes(adminRole)) {
       return NextResponse.json(
@@ -98,12 +98,12 @@ export async function POST(request: NextRequest) {
 
 /**
  * DELETE /api/admin/users
- * Delete an admin user (Super Admin only)
+ * Delete an admin user (Admin only)
  */
 export async function DELETE(request: NextRequest) {
   try {
-    // Verify super admin session
-    const sessionResult = await requireSuperAdmin();
+    // Verify admin session
+    const sessionResult = await requireAdminRole();
 
     if (!sessionResult.valid || !sessionResult.admin) {
       return NextResponse.json(

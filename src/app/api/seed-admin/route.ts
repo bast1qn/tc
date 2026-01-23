@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       data: {
         username: 'Admin',
         passwordHash,
-        role: 'SUPER_ADMIN',
+        role: 'ADMIN',
         mustChangePassword: true,
       },
     });
