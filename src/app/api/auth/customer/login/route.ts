@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateCustomer, verifyCustomerPassword, getCustomerBySubmissionId } from '@/lib/auth/customer';
+import { prisma } from '@/lib/database';
 import { cookies } from 'next/headers';
 
 const CUSTOMER_SESSION_COOKIE = 'customer_session';
@@ -16,15 +16,14 @@ export interface CustomerSession {
  * Customer Login API
  * POST /api/auth/customer/login
  *
- * Body: { email: string, tcNummer: string, password?: string }
+ * Body: { email: string, tcNummer: string }
  *
- * First login: Customer verifies email + TC number, then sets password
- * Subsequent logins: Customer uses email + TC number + password
+ * Simple login with email + TC number - no password required
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, tcNummer, password } = body;
+    const { email, tcNummer } = body;
 
     // Validate required fields
     if (!email || !tcNummer) {
@@ -34,49 +33,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Authenticate customer
-    const authResult = await authenticateCustomer({ email, tcNummer });
+    // Find submission directly by email and TC number
+    const submission = await prisma.submission.findFirst({
+      where: {
+        email: { equals: email, mode: 'insensitive' },
+        tcNummer: { equals: tcNummer, mode: 'insensitive' },
+      },
+      select: {
+        id: true,
+        email: true,
+        tcNummer: true,
+        vorname: true,
+        nachname: true,
+      },
+    });
 
-    if (!authResult.success || !authResult.customer) {
+    if (!submission) {
       return NextResponse.json(
-        { error: authResult.error || 'Authentifizierung fehlgeschlagen' },
+        { error: 'Keine Meldung mit diesen Daten gefunden' },
         { status: 401 }
       );
     }
 
-    const { customer } = authResult;
-
-    // Check if customer has a password set
-    const customerWithPassword = await getCustomerBySubmissionId(customer.submissionId);
-    const hasPassword = customerWithPassword?.passwordHash && customerWithPassword.passwordHash.length > 0;
-
-    // If password is provided, verify it
-    if (hasPassword) {
-      if (!password) {
-        return NextResponse.json(
-          {
-            error: 'Passwort erforderlich',
-            requiresPassword: true,
-          },
-          { status: 401 }
-        );
-      }
-
-      const isValid = await verifyCustomerPassword(customer.submissionId, password);
-      if (!isValid) {
-        return NextResponse.json(
-          { error: 'Ungültiges Passwort' },
-          { status: 401 }
-        );
-      }
-    }
-
     // Create session
     const session: CustomerSession = {
-      customerId: customer.id,
-      email: customer.email,
-      tcNummer: customer.tcNummer,
-      submissionId: customer.submissionId,
+      customerId: submission.id,
+      email: submission.email,
+      tcNummer: submission.tcNummer,
+      submissionId: submission.id,
     };
 
     // Set session cookie
@@ -94,12 +78,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       customer: {
-        id: customer.id,
-        email: customer.email,
-        tcNummer: customer.tcNummer,
-        submissionId: customer.submissionId,
+        id: submission.id,
+        email: submission.email,
+        tcNummer: submission.tcNummer,
+        vorname: submission.vorname,
+        nachname: submission.nachname,
       },
-      requiresPasswordSetup: !hasPassword,
     });
   } catch (error) {
     console.error('Customer login error:', error);

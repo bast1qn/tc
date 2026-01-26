@@ -48,13 +48,7 @@ export default function CustomerLoginPage() {
       }
 
       toast.success("Erfolgreich eingeloggt");
-
-      // If password setup is required, redirect to password setup
-      if (data.requiresPasswordSetup) {
-        router.push("/customer-setup-password");
-      } else {
-        router.push("/customer-dashboard");
-      }
+      router.push("/customer-dashboard");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Login fehlgeschlagen");
     } finally {

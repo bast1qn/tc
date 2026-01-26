@@ -123,22 +123,8 @@ export async function POST(request: NextRequest) {
       include: { files: true },
     });
 
-    // Create customer account for tracking
+    // Send confirmation email to customer with tracking link
     try {
-      const { hash } = await import('bcrypt');
-      const tempPassword = generateTempPassword();
-      const passwordHash = await hash(tempPassword, 12);
-
-      await prisma.customer.create({
-        data: {
-          submissionId: submission.id,
-          email: submission.email,
-          tcNummer: submission.tcNummer,
-          passwordHash,
-        },
-      });
-
-      // Send confirmation email to customer with login credentials
       await fetch(`${request.nextUrl.origin}/api/send-confirmation-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -147,14 +133,13 @@ export async function POST(request: NextRequest) {
           vorname: submission.vorname,
           nachname: submission.nachname,
           tcNummer: submission.tcNummer,
-          tempPassword,
           trackingToken,
           trackingUrl: `${request.nextUrl.origin}/track/${trackingToken}`,
         }),
       });
-    } catch (customerError) {
-      console.error('Customer account creation failed:', customerError);
-      // Don't fail the submission if customer creation fails
+    } catch (emailError) {
+      console.error('Confirmation email failed:', emailError);
+      // Don't fail the submission if email fails
     }
 
     // Send email notification to admin
@@ -178,18 +163,6 @@ export async function POST(request: NextRequest) {
     console.error('POST submission error:', error);
     return NextResponse.json({ error: 'Failed to create submission' }, { status: 500 });
   }
-}
-
-/**
- * Generate a temporary password for new customers
- */
-function generateTempPassword(): string {
-  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
-  let password = '';
-  for (let i = 0; i < 12; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
 }
 
 /**

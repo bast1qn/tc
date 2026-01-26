@@ -19,7 +19,6 @@ interface ConfirmationEmailData {
   vorname: string;
   nachname: string;
   tcNummer: string;
-  tempPassword: string;
   trackingToken?: string;
   trackingUrl?: string;
 }
@@ -176,8 +175,7 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
       <div class="info-box">
         <h3>Status verfolgen</h3>
         <p style="margin: 0; color: #4b5563;">
-          Sie können den Bearbeitungsstatus Ihrer Meldung jederzeit online
-          verfolgen. Hierfür haben wir automatisch ein Kundenkonto für Sie erstellt.
+          Sie können den Bearbeitungsstatus Ihrer Meldung jederzeit online verfolgen.
         </p>
       </div>
 
@@ -202,12 +200,21 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
       ` : ''}
 
       <div class="info-box" style="background-color: #eff6ff; border-left-color: #2563eb;">
-        <h3 style="color: #2563eb; margin: 0 0 15px 0;">Alternative: Alle Ihre Meldungen</h3>
-        <p style="margin: 0; color: #4b5563;">
-          Alternativ können Sie sich auf
-          <a href="https://www.tc.scalesite.de/customer-login" style="color: #2563eb; font-weight: 600;">www.tc.scalesite.de</a>
-          mit Ihrer TC-Nummer (${data.tcNummer}) und E-Mail-Adresse anmelden,
-          um <strong>alle Ihre Meldungen</strong> zu sehen.
+        <h3 style="color: #2563eb; margin: 0 0 15px 0;">Kunden-Login</h3>
+        <p style="margin: 0 0 10px 0; color: #4b5563;">
+          Melden Sie sich auf <a href="https://www.tc.scalesite.de/customer-login" style="color: #2563eb; font-weight: 600;">www.tc.scalesite.de</a>
+          mit Ihren Zugangsdaten an:
+        </p>
+        <div class="credential-item" style="border-bottom: none; padding: 8px 0;">
+          <span class="credential-label">E-Mail:</span>
+          <span class="credential-value">${data.email}</span>
+        </div>
+        <div class="credential-item" style="border-bottom: none; padding: 8px 0;">
+          <span class="credential-label">TC-Nummer:</span>
+          <span class="credential-value">${data.tcNummer}</span>
+        </div>
+        <p style="font-size: 12px; color: #6b7280; margin: 15px 0 0 0;">
+          Kein Passwort erforderlich – nur E-Mail und TC-Nummer.
         </p>
       </div>
 
