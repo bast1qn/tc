@@ -79,18 +79,6 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
       color: #E30613;
       font-size: 16px;
     }
-    .credentials-box {
-      background-color: #fef3c7;
-      border: 1px solid #f59e0b;
-      padding: 20px;
-      margin: 20px 0;
-      border-radius: 4px;
-    }
-    .credentials-box h3 {
-      margin: 0 0 15px 0;
-      color: #92400e;
-      font-size: 16px;
-    }
     .credential-item {
       display: flex;
       justify-content: space-between;
@@ -126,26 +114,6 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
     .login-button:hover {
       background-color: #C00510;
     }
-    .warning-box {
-      background-color: #fee2e2;
-      border-left: 4px solid #dc2626;
-      padding: 15px;
-      margin: 20px 0;
-      border-radius: 4px;
-      font-size: 14px;
-      color: #991b1b;
-    }
-    .steps {
-      margin: 20px 0;
-    }
-    .steps ol {
-      margin: 0;
-      padding-left: 20px;
-    }
-    .steps li {
-      padding: 8px 0;
-      color: #4b5563;
-    }
     .footer {
       background-color: #f9fafb;
       padding: 20px 30px;
@@ -153,6 +121,13 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
       font-size: 12px;
       color: #6b7280;
       border-top: 1px solid #e5e7eb;
+    }
+    a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -201,7 +176,7 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
 
       <div class="info-box" style="background-color: #eff6ff; border-left-color: #2563eb;">
         <h3 style="color: #2563eb; margin: 0 0 15px 0;">Kunden-Login</h3>
-        <p style="margin: 0 0 10px 0; color: #4b5563;">
+        <p style="margin: 0 0 15px 0; color: #4b5563;">
           Melden Sie sich auf <a href="https://www.tc.scalesite.de/customer-login" style="color: #2563eb; font-weight: 600;">www.tc.scalesite.de</a>
           mit Ihren Zugangsdaten an:
         </p>
@@ -214,49 +189,12 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
           <span class="credential-value">${data.tcNummer}</span>
         </div>
         <p style="font-size: 12px; color: #6b7280; margin: 15px 0 0 0;">
-          Kein Passwort erforderlich – nur E-Mail und TC-Nummer.
+          <strong>Kein Passwort erforderlich</strong> – nur E-Mail und TC-Nummer.
         </p>
       </div>
 
-      <div class="credentials-box">
-        <h3>Ihre Zugangsdaten</h3>
-        <div class="credential-item">
-          <span class="credential-label">E-Mail:</span>
-          <span class="credential-value">${data.email}</span>
-        </div>
-        <div class="credential-item">
-          <span class="credential-label">TC-Nummer:</span>
-          <span class="credential-value">${data.tcNummer}</span>
-        </div>
-        <div class="credential-item">
-          <span class="credential-label">Passwort:</span>
-          <span class="credential-value">${data.tempPassword}</span>
-        </div>
-      </div>
-
-      <div class="warning-box">
-        <strong>Wichtiger Hinweis:</strong> Bitte ändern Sie Ihr Passwort
-        nach dem ersten Login aus Sicherheitsgründen.
-      </div>
-
-      <div class="steps">
-        <h3 style="margin: 0 0 10px 0; color: #1f2937;">So kommen Sie zum Kundenportal:</h3>
-        <ol>
-          <li>Besuchen Sie unsere Login-Seite</li>
-          <li>Geben Sie Ihre E-Mail-Adresse und TC-Nummer ein</li>
-          <li>Nutzen Sie das oben genannte Passwort für den ersten Login</li>
-          <li>Ändern Sie nach dem Login Ihr Passwort</li>
-        </ol>
-      </div>
-
-      <div class="button-container">
-        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://haftung.nexxo.de'}/customer/login" class="login-button">
-          Zum Kundenportal
-        </a>
-      </div>
-
       <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">
-        Bei Fragen erreichen Sie uns unterhilfe@hauswunsch24.de
+        Bei Fragen erreichen Sie uns unter <a href="mailto:hilfe@hauswunsch24.de">hilfe@hauswunsch24.de</a>
       </p>
     </div>
 
@@ -277,7 +215,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json() as ConfirmationEmailData;
 
     // Validate required fields
-    if (!body.email || !body.vorname || !body.nachname || !body.tcNummer || !body.tempPassword) {
+    if (!body.email || !body.vorname || !body.nachname || !body.tcNummer) {
       console.error('[Confirmation Email API] Missing required fields');
       return NextResponse.json(
         { error: 'Fehlende erforderliche Felder' },
