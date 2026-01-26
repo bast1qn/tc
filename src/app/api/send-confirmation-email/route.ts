@@ -20,6 +20,8 @@ interface ConfirmationEmailData {
   nachname: string;
   tcNummer: string;
   tempPassword: string;
+  trackingToken?: string;
+  trackingUrl?: string;
 }
 
 function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
@@ -176,6 +178,36 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
         <p style="margin: 0; color: #4b5563;">
           Sie können den Bearbeitungsstatus Ihrer Meldung jederzeit online
           verfolgen. Hierfür haben wir automatisch ein Kundenkonto für Sie erstellt.
+        </p>
+      </div>
+
+      ${data.trackingUrl ? `
+      <div class="info-box" style="background-color: #f0fdf4; border-left-color: #16a34a;">
+        <h3 style="color: #16a34a; margin: 0 0 15px 0;">Ihr persönlicher Direktlink</h3>
+        <p style="margin: 0 0 15px 0; color: #4b5563;">
+          Verfolgen Sie den Status Ihrer Meldung über diesen sicheren Direktlink –
+          ähnlich wie eine Sendungsverfolgung:
+        </p>
+        <div class="button-container">
+          <a href="${data.trackingUrl}" class="login-button" style="background-color: #16a34a; hover:bg-color: #15803d;">
+            Zum Status verfolgen
+          </a>
+        </div>
+        <p style="font-size: 12px; color: #6b7280; margin: 15px 0 0 0;">
+          <strong>Sicherheit:</strong> Zur Verifikation benötigen Sie Ihre Postleitzahl
+          und E-Mail-Adresse. So sind Ihre Daten geschützt, auch wenn jemand anderes
+          auf den Link zugreift.
+        </p>
+      </div>
+      ` : ''}
+
+      <div class="info-box" style="background-color: #eff6ff; border-left-color: #2563eb;">
+        <h3 style="color: #2563eb; margin: 0 0 15px 0;">Alternative: Alle Ihre Meldungen</h3>
+        <p style="margin: 0; color: #4b5563;">
+          Alternativ können Sie sich auf
+          <a href="https://www.tc.scalesite.de/customer-login" style="color: #2563eb; font-weight: 600;">www.tc.scalesite.de</a>
+          mit Ihrer TC-Nummer (${data.tcNummer}) und E-Mail-Adresse anmelden,
+          um <strong>alle Ihre Meldungen</strong> zu sehen.
         </p>
       </div>
 

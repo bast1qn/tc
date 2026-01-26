@@ -51,13 +51,24 @@ export default function Header() {
                 </Button>
               </Link>
             ) : (
-              <Link href="/admin">
-                <Button className="bg-[#E30613] hover:bg-[#C00510] text-white font-semibold">
-                  <Settings className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Admin Dashboard</span>
-                  <span className="sm:hidden">Admin</span>
-                </Button>
-              </Link>
+              <div className="flex gap-2">
+                <Link href="/customer-login">
+                  <Button
+                    variant="outline"
+                    className="border-[#E30613] text-[#E30613] hover:bg-[#E30613] hover:text-white transition-colors"
+                  >
+                    <span className="hidden sm:inline">Kunden-Login</span>
+                    <span className="sm:hidden">Login</span>
+                  </Button>
+                </Link>
+                <Link href="/admin">
+                  <Button className="bg-[#E30613] hover:bg-[#C00510] text-white font-semibold">
+                    <Settings className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Admin</span>
+                    <span className="sm:hidden">Admin</span>
+                  </Button>
+                </Link>
+              </div>
             )}
           </nav>
         </div>

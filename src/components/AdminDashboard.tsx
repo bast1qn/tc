@@ -63,6 +63,14 @@ const statusColors: Record<WarrantyStatus, string> = {
   "Mangel abgelehnt": "bg-gray-100 text-gray-800 hover:bg-gray-200",
 };
 
+// Row background colors based on status
+const rowBgColors: Record<WarrantyStatus, string> = {
+  Offen: "bg-red-50 hover:bg-red-100",
+  "In Bearbeitung": "bg-blue-50 hover:bg-blue-100",
+  Erledigt: "bg-green-50 hover:bg-green-100",
+  "Mangel abgelehnt": "bg-gray-50 hover:bg-gray-100",
+};
+
 const BAULEITUNG_OPTIONS = [
   "Daniel Mordass",
   "Jens Kohnert",
@@ -604,7 +612,7 @@ export default function AdminDashboard() {
                   </TableRow>
                 ) : (
                   filteredAndSortedSubmissions.map((submission, index) => (
-                    <TableRow key={submission.id} className="hover:bg-gray-50">
+                    <TableRow key={submission.id} className={rowBgColors[submission.status]}>
                       <TableCell className="whitespace-nowrap font-medium">
                         {index + 1}
                       </TableCell>

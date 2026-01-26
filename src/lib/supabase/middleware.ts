@@ -17,11 +17,15 @@ const publicApiPaths = [
   '/api/send-email',
   '/api/send-confirmation-email',
   '/api/submissions',
+  '/api/track', // Tracking API
 ]
 
 function isPublicPath(pathname: string): boolean {
   // Check exact public paths
   if (publicPaths.includes(pathname)) return true
+
+  // Check tracking pages (e.g., /track/abc123xyz)
+  if (pathname.startsWith('/track/')) return true
 
   // Check public API paths
   if (pathname.startsWith('/api/')) {

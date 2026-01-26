@@ -107,11 +107,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Generate tracking token for secure link
+    const trackingToken = generateTrackingToken();
+
     // Create submission in database
     const submission = await prisma.submission.create({
       data: {
         ...data,
         status: Status.OFFEN,
+        trackingToken,
         files: {
           create: uploadedFiles,
         },
@@ -144,6 +148,8 @@ export async function POST(request: NextRequest) {
           nachname: submission.nachname,
           tcNummer: submission.tcNummer,
           tempPassword,
+          trackingToken,
+          trackingUrl: `${request.nextUrl.origin}/track/${trackingToken}`,
         }),
       });
     } catch (customerError) {
@@ -184,4 +190,12 @@ function generateTempPassword(): string {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return password;
+}
+
+/**
+ * Generate a cryptographically secure tracking token
+ */
+function generateTrackingToken(): string {
+  const crypto = require('crypto');
+  return crypto.randomBytes(24).toString('hex');
 }
