@@ -65,7 +65,7 @@ export default function WarrantyForm() {
       newErrors.ort = "Ort ist erforderlich";
     }
     if (!formData.tcNummer.trim()) {
-      newErrors.tcNummer = "TC-Nummer ist erforderlich";
+      newErrors.tcNummer = "Bauvorhaben-Nummer ist erforderlich";
     }
     if (!formData.email.trim()) {
       newErrors.email = "E-Mail-Adresse ist erforderlich";
@@ -331,29 +331,29 @@ export default function WarrantyForm() {
             </div>
           </div>
 
-          {/* TC Number */}
+          {/* Bauvorhaben Number */}
           <div className="space-y-2">
             <Label htmlFor="tcNummer" className="font-medium">
-              TC-Nummer <span className="text-[#E30613]">*</span>
+              Bauvorhaben-Nummer <span className="text-[#E30613]">*</span>
             </Label>
             <Input
               id="tcNummer"
               name="tcNummer"
               value={formData.tcNummer}
               onChange={handleInputChange}
-              placeholder="TC-123456"
+              placeholder="BV-123456"
               className={errors.tcNummer ? "border-red-500" : ""}
               aria-invalid={!!errors.tcNummer}
-              aria-describedby={errors.tcNummer ? "tc-error" : undefined}
+              aria-describedby={errors.tcNummer ? "bv-error" : undefined}
             />
             {errors.tcNummer && (
-              <p id="tc-error" className="text-sm text-red-500 flex items-center gap-1">
+              <p id="bv-error" className="text-sm text-red-500 flex items-center gap-1">
                 <AlertCircle className="w-4 h-4" />
                 {errors.tcNummer}
               </p>
             )}
             <p className="text-xs text-gray-500">
-              Die TC-Nummer finden Sie in Ihren Vertragsunterlagen.
+              Die sechsstellige Bauvorhaben-Nummer finden Sie auf Ihren Rechnungen oder Zusatzvereinbarungen.
             </p>
           </div>
 

@@ -16,7 +16,7 @@ export default function Home() {
               Gewährleistungsanfrage
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Haben Sie einen Mangel an Ihrem Town & Country Haus festgestellt?
+              Haben Sie ein Problem an Ihrem Town & Country Haus festgestellt?
               <br className="hidden md:block" />
               Nutzen Sie unser Formular, um Ihre Anfrage schnell und unkompliziert einzureichen.
             </p>
@@ -30,7 +30,7 @@ export default function Home() {
               </div>
               <h3 className="font-semibold text-gray-800 mb-1">Formular ausfüllen</h3>
               <p className="text-sm text-gray-600">
-                Geben Sie Ihre Daten und eine Beschreibung des Mangels ein.
+                Geben Sie Ihre Daten und eine Beschreibung des Sachverhaltes ein.
               </p>
             </div>
             <div className="text-center p-4">
@@ -39,7 +39,7 @@ export default function Home() {
               </div>
               <h3 className="font-semibold text-gray-800 mb-1">Bilder hochladen</h3>
               <p className="text-sm text-gray-600">
-                Dokumentieren Sie den Mangel mit Fotos oder Dokumenten.
+                Dokumentieren Sie den Sachverhalt mit Fotos oder Dokumenten.
               </p>
             </div>
             <div className="text-center p-4">

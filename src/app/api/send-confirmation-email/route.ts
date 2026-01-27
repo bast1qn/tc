@@ -79,6 +79,20 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
       color: #E30613;
       font-size: 16px;
     }
+    .info-box.green {
+      background-color: #f0fdf4;
+      border-left-color: #16a34a;
+    }
+    .info-box.green h3 {
+      color: #16a34a;
+    }
+    .info-box.red {
+      background-color: #fef2f2;
+      border-left-color: #dc2626;
+    }
+    .info-box.red h3 {
+      color: #dc2626;
+    }
     .credential-item {
       display: flex;
       justify-content: space-between;
@@ -114,6 +128,12 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
     .login-button:hover {
       background-color: #C00510;
     }
+    .login-button.green {
+      background-color: #16a34a;
+    }
+    .login-button.green:hover {
+      background-color: #15803d;
+    }
     .footer {
       background-color: #f9fafb;
       padding: 20px 30px;
@@ -135,7 +155,7 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
   <div class="container">
     <div class="header">
       <h1>Ihre Gewährleistungsmeldung</h1>
-      <p>TC-Nummer: ${data.tcNummer}</p>
+      <p>Bauvorhaben-Nummer: ${data.tcNummer}</p>
     </div>
 
     <div class="content">
@@ -143,26 +163,19 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
         Hallo ${data.vorname} ${data.nachname},
       </p>
       <p class="welcome-text">
-        vielen Dank für Ihre Meldung. Wir haben Ihre Gewährleistungsmeldung
-        erfolgreich erhalten und werden diese umgehend bearbeiten.
+        vielen Dank für Ihre Meldung. Wir haben Ihr Anliegen erhalten und
+        werden dieses schnellstmöglich bearbeiten.
       </p>
 
-      <div class="info-box">
-        <h3>Status verfolgen</h3>
-        <p style="margin: 0; color: #4b5563;">
-          Sie können den Bearbeitungsstatus Ihrer Meldung jederzeit online verfolgen.
-        </p>
-      </div>
-
       ${data.trackingUrl ? `
-      <div class="info-box" style="background-color: #f0fdf4; border-left-color: #16a34a;">
-        <h3 style="color: #16a34a; margin: 0 0 15px 0;">Ihr persönlicher Direktlink</h3>
+      <div class="info-box green">
+        <h3>Status verfolgen</h3>
         <p style="margin: 0 0 15px 0; color: #4b5563;">
-          Verfolgen Sie den Status Ihrer Meldung über diesen sicheren Direktlink –
+          Verfolgen Sie den Bearbeitungsstatus Ihrer Meldung über diesen sicheren Direktlink –
           ähnlich wie eine Sendungsverfolgung:
         </p>
         <div class="button-container">
-          <a href="${data.trackingUrl}" class="login-button" style="background-color: #16a34a; hover:bg-color: #15803d;">
+          <a href="${data.trackingUrl}" class="login-button green">
             Zum Status verfolgen
           </a>
         </div>
@@ -174,10 +187,10 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
       </div>
       ` : ''}
 
-      <div class="info-box" style="background-color: #eff6ff; border-left-color: #2563eb;">
-        <h3 style="color: #2563eb; margin: 0 0 15px 0;">Kunden-Login</h3>
+      <div class="info-box red">
+        <h3>Kunden-Login</h3>
         <p style="margin: 0 0 15px 0; color: #4b5563;">
-          Melden Sie sich auf <a href="https://www.tc.scalesite.de/customer-login" style="color: #2563eb; font-weight: 600;">www.tc.scalesite.de</a>
+          Melden Sie sich auf <a href="https://www.tc.scalesite.de/customer-login" style="color: #dc2626; font-weight: 600;">www.tc.scalesite.de</a>
           mit Ihren Zugangsdaten an:
         </p>
         <div class="credential-item" style="border-bottom: none; padding: 8px 0;">
@@ -185,12 +198,9 @@ function createConfirmationEmailHTML(data: ConfirmationEmailData): string {
           <span class="credential-value">${data.email}</span>
         </div>
         <div class="credential-item" style="border-bottom: none; padding: 8px 0;">
-          <span class="credential-label">TC-Nummer:</span>
+          <span class="credential-label">Bauvorhaben-Nummer:</span>
           <span class="credential-value">${data.tcNummer}</span>
         </div>
-        <p style="font-size: 12px; color: #6b7280; margin: 15px 0 0 0;">
-          <strong>Kein Passwort erforderlich</strong> – nur E-Mail und TC-Nummer.
-        </p>
       </div>
 
       <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">

@@ -94,14 +94,14 @@ export default function CustomerLoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tcNummer">TC-Nummer</Label>
+                <Label htmlFor="tcNummer">Bauvorhaben-Nummer</Label>
                 <div className="relative">
                   <Home className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     id="tcNummer"
                     name="tcNummer"
                     type="text"
-                    placeholder="TC-12345"
+                    placeholder="BV-12345"
                     value={formData.tcNummer}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -110,7 +110,7 @@ export default function CustomerLoginPage() {
                   />
                 </div>
                 <p className="text-xs text-gray-500">
-                  Ihre TC-Nummer finden Sie in Ihren Unterlagen
+                  Ihre Bauvorhaben-Nummer finden Sie auf Ihren Rechnungen oder Zusatzvereinbarungen
                 </p>
               </div>
 

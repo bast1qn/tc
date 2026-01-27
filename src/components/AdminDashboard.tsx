@@ -543,7 +543,7 @@ export default function AdminDashboard() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Suchen nach Name, E-Mail, TC-Nummer, Ort..."
+                  placeholder="Suchen nach Name, E-Mail, BV-Nummer, Straße, Ort, Beschreibung..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -608,11 +608,12 @@ export default function AdminDashboard() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="whitespace-nowrap">Nr</TableHead>
+                  <TableHead className="whitespace-nowrap">Eingang</TableHead>
                   <TableHead
                     className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
                     onClick={() => handleSort("tcNummer")}
                   >
-                    TC-N <SortIcon field="tcNummer" />
+                    BV-Nr <SortIcon field="tcNummer" />
                   </TableHead>
                   <TableHead
                     className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
@@ -621,7 +622,6 @@ export default function AdminDashboard() {
                     Name <SortIcon field="name" />
                   </TableHead>
                   <TableHead className="whitespace-nowrap">Telefon</TableHead>
-                  <TableHead className="whitespace-nowrap">Haustyp</TableHead>
                   <TableHead>Straße und Ort</TableHead>
                   <TableHead className="whitespace-nowrap">Bauleitung</TableHead>
                   <TableHead className="whitespace-nowrap">Abnahme</TableHead>
@@ -644,7 +644,7 @@ export default function AdminDashboard() {
               <TableBody>
                 {filteredAndSortedSubmissions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={17} className="text-center py-12 text-gray-500">
+                    <TableCell colSpan={16} className="text-center py-12 text-gray-500">
                       {submissions.length === 0
                         ? "Noch keine Anfragen vorhanden"
                         : "Keine Anfragen gefunden für die aktuellen Filter"}
@@ -656,6 +656,9 @@ export default function AdminDashboard() {
                       <TableCell className="whitespace-nowrap font-medium">
                         {index + 1}
                       </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(submission.timestamp)}
+                      </TableCell>
                       <TableCell className="font-mono text-sm whitespace-nowrap">
                         {submission.tcNummer}
                       </TableCell>
@@ -664,9 +667,6 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm">
                         {submission.telefon || "-"}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {submission.haustyp || "-"}
                       </TableCell>
                       <TableCell className="text-sm">
                         <div>{submission.strasseHausnummer}</div>
@@ -980,11 +980,12 @@ export default function AdminDashboard() {
                 <TableHeader>
                   <TableRow className="bg-gray-50">
                     <TableHead className="whitespace-nowrap">Nr</TableHead>
+                    <TableHead className="whitespace-nowrap">Eingang</TableHead>
                     <TableHead
                       className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
                       onClick={() => handleSort("tcNummer")}
                     >
-                      TC-N <SortIcon field="tcNummer" />
+                      BV-Nr <SortIcon field="tcNummer" />
                     </TableHead>
                     <TableHead
                       className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
@@ -993,7 +994,6 @@ export default function AdminDashboard() {
                       Name <SortIcon field="name" />
                     </TableHead>
                     <TableHead className="whitespace-nowrap">Telefon</TableHead>
-                    <TableHead className="whitespace-nowrap">Haustyp</TableHead>
                     <TableHead>Straße und Ort</TableHead>
                     <TableHead className="whitespace-nowrap">Bauleitung</TableHead>
                     <TableHead className="whitespace-nowrap">Abnahme</TableHead>
@@ -1016,7 +1016,7 @@ export default function AdminDashboard() {
                 <TableBody>
                   {filteredAndSortedSubmissions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={17} className="text-center py-12 text-gray-500">
+                      <TableCell colSpan={16} className="text-center py-12 text-gray-500">
                         {submissions.length === 0
                           ? "Noch keine Anfragen vorhanden"
                           : "Keine Anfragen gefunden für die aktuellen Filter"}
@@ -1026,12 +1026,12 @@ export default function AdminDashboard() {
                     filteredAndSortedSubmissions.map((submission, index) => (
                       <TableRow key={submission.id} className={rowBgColors[submission.status] + " hover:opacity-80"}>
                         <TableCell className="whitespace-nowrap font-medium">{index + 1}</TableCell>
+                        <TableCell className="whitespace-nowrap text-sm text-gray-500">{formatDate(submission.timestamp)}</TableCell>
                         <TableCell className="font-mono text-sm whitespace-nowrap">{submission.tcNummer}</TableCell>
                         <TableCell className="whitespace-nowrap">
                           {submission.vorname} {submission.nachname}
                         </TableCell>
                         <TableCell className="whitespace-nowrap text-sm">{submission.telefon || "-"}</TableCell>
-                        <TableCell className="whitespace-nowrap">{submission.haustyp || "-"}</TableCell>
                         <TableCell className="text-sm">
                           <div>{submission.strasseHausnummer}</div>
                           <div className="text-gray-500">{submission.plz} {submission.ort}</div>

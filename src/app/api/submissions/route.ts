@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
         { email: { contains: search, mode: 'insensitive' } },
         { tcNummer: { contains: search, mode: 'insensitive' } },
         { ort: { contains: search, mode: 'insensitive' } },
+        { strasseHausnummer: { contains: search, mode: 'insensitive' } },
+        { beschreibung: { contains: search, mode: 'insensitive' } },
       ];
     }
 

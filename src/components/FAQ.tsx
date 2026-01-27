@@ -28,7 +28,7 @@ const faqItems: FAQItem[] = [
   {
     question: "Welche Unterlagen benötige ich für eine Gewährleistungsanfrage?",
     answer:
-      "Für eine schnelle Bearbeitung benötigen wir Ihre TC-Nummer (aus den Vertragsunterlagen), eine detaillierte Beschreibung des Mangels sowie aussagekräftige Fotos oder Dokumente, die den Mangel dokumentieren.",
+      "Für eine schnelle Bearbeitung benötigen wir Ihre Bauvorhaben-Nummer (aus Ihren Rechnungen oder Zusatzvereinbarungen), eine detaillierte Beschreibung des Sachverhaltes sowie aussagekräftige Fotos oder Dokumente, die den Sachverhalt dokumentieren.",
   },
   {
     question: "Wie lange dauert die Bearbeitung meiner Anfrage?",
@@ -39,11 +39,6 @@ const faqItems: FAQItem[] = [
     question: "Was passiert nach dem Einreichen meiner Anfrage?",
     answer:
       "Nach dem Einreichen erhalten Sie eine Bestätigung. Anschließend wird Ihre Anfrage von unserem Kundenservice geprüft. Bei Bedarf kontaktieren wir Sie für weitere Informationen oder vereinbaren einen Vor-Ort-Termin.",
-  },
-  {
-    question: "Kann ich auch kleinere Mängel melden?",
-    answer:
-      "Ja, Sie können jeden Mangel melden, der auf fehlerhafte Bauausführung zurückzuführen ist. Unser Team prüft jede Anfrage individuell und berät Sie über das weitere Vorgehen.",
   },
   {
     question: "Was ist, wenn der Mangel außerhalb der Gewährleistungsfrist auftritt?",
