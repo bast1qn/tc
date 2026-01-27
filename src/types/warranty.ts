@@ -46,6 +46,12 @@ export interface WarrantyFormData {
   email: string;
   telefon: string;
   beschreibung: string;
+  haustyp?: string;
+  bauleitung?: string;
+  abnahme?: string;
+  verantwortlicher?: string;
+  gewerk?: string;
+  firma?: string;
   files: File[];
   dsgvoAccepted: boolean;
 }

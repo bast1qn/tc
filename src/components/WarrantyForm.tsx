@@ -26,6 +26,12 @@ const initialFormData: WarrantyFormData = {
   email: "",
   telefon: "",
   beschreibung: "",
+  haustyp: "",
+  bauleitung: "",
+  abnahme: "",
+  verantwortlicher: "",
+  gewerk: "",
+  firma: "",
   files: [],
   dsgvoAccepted: false,
 };
@@ -397,6 +403,96 @@ export default function WarrantyForm() {
                   {errors.telefon}
                 </p>
               )}
+            </div>
+          </div>
+
+          {/* Additional Project Information (Optional) */}
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Weitere Informationen (optional)
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Diese Informationen helfen uns bei der schnelleren Bearbeitung Ihrer Anfrage.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="haustyp" className="font-medium">
+                  Haustyp
+                </Label>
+                <Input
+                  id="haustyp"
+                  name="haustyp"
+                  value={formData.haustyp || ""}
+                  onChange={handleInputChange}
+                  placeholder="z.B. Reihenhaus, Doppelhaushälfte"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bauleitung" className="font-medium">
+                  Bauleitung
+                </Label>
+                <Input
+                  id="bauleitung"
+                  name="bauleitung"
+                  value={formData.bauleitung || ""}
+                  onChange={handleInputChange}
+                  placeholder="Name der Bauleitung"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="abnahme" className="font-medium">
+                  Abnahme
+                </Label>
+                <Input
+                  id="abnahme"
+                  name="abnahme"
+                  value={formData.abnahme || ""}
+                  onChange={handleInputChange}
+                  placeholder="Datum der Abnahme"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="verantwortlicher" className="font-medium">
+                  Verantwortliche/r
+                </Label>
+                <Input
+                  id="verantwortlicher"
+                  name="verantwortlicher"
+                  value={formData.verantwortlicher || ""}
+                  onChange={handleInputChange}
+                  placeholder="Name der verantwortlichen Person"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gewerk" className="font-medium">
+                  Gewerk
+                </Label>
+                <Input
+                  id="gewerk"
+                  name="gewerk"
+                  value={formData.gewerk || ""}
+                  onChange={handleInputChange}
+                  placeholder="z.B. Elektro, Sanitär, Dach"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="firma" className="font-medium">
+                  Firma
+                </Label>
+                <Input
+                  id="firma"
+                  name="firma"
+                  value={formData.firma || ""}
+                  onChange={handleInputChange}
+                  placeholder="Name des ausführenden Unternehmens"
+                />
+              </div>
             </div>
           </div>
 
