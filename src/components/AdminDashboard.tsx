@@ -14,6 +14,8 @@ import {
   AlertTriangle,
   RefreshCw,
   Trash2,
+  Maximize,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,7 +55,7 @@ import { DefectsByGewerk } from "@/components/charts/DefectsByGewerk";
 import { DefectsByBauleitung } from "@/components/charts/DefectsByBauleitung";
 import { DefectsByFirma } from "@/components/charts/DefectsByFirma";
 
-type SortField = "timestamp" | "vorname" | "nachname" | "ort" | "status" | "tcNummer";
+type SortField = "timestamp" | "vorname" | "nachname" | "name" | "ort" | "status" | "tcNummer";
 type SortDirection = "asc" | "desc";
 
 const statusColors: Record<WarrantyStatus, string> = {
@@ -148,6 +150,16 @@ export default function AdminDashboard() {
   const [selectedSubmission, setSelectedSubmission] = useState<WarrantySubmission | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<WarrantySubmission | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
   const loadSubmissions = useCallback(async () => {
     setIsLoading(true);
@@ -172,6 +184,16 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadSubmissions();
   }, [loadSubmissions]);
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isFullscreen]);
 
   const handleStatusChange = async (id: string, newStatus: WarrantyStatus) => {
     // Optimistisches Update - sofortige UI-Aktualisierung
@@ -328,6 +350,9 @@ export default function AdminDashboard() {
           break;
         case "nachname":
           comparison = a.nachname.localeCompare(b.nachname, "de");
+          break;
+        case "name":
+          comparison = `${a.vorname} ${a.nachname}`.localeCompare(`${b.vorname} ${b.nachname}`, "de");
           break;
         case "ort":
           comparison = a.ort.localeCompare(b.ort, "de");
@@ -561,6 +586,15 @@ export default function AdminDashboard() {
                 )}
                 Excel Export
               </Button>
+              <Button
+                onClick={() => setIsFullscreen(true)}
+                variant="outline"
+                title="Vollbildmodus"
+                className="flex items-center gap-2"
+              >
+                <Maximize className="w-4 h-4" />
+                <span className="hidden sm:inline">Vollbild</span>
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -579,6 +613,12 @@ export default function AdminDashboard() {
                     onClick={() => handleSort("tcNummer")}
                   >
                     TC-N <SortIcon field="tcNummer" />
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
+                    onClick={() => handleSort("name")}
+                  >
+                    Name <SortIcon field="name" />
                   </TableHead>
                   <TableHead className="whitespace-nowrap">Telefon</TableHead>
                   <TableHead className="whitespace-nowrap">Haustyp</TableHead>
@@ -604,7 +644,7 @@ export default function AdminDashboard() {
               <TableBody>
                 {filteredAndSortedSubmissions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={16} className="text-center py-12 text-gray-500">
+                    <TableCell colSpan={17} className="text-center py-12 text-gray-500">
                       {submissions.length === 0
                         ? "Noch keine Anfragen vorhanden"
                         : "Keine Anfragen gefunden für die aktuellen Filter"}
@@ -618,6 +658,9 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell className="font-mono text-sm whitespace-nowrap">
                         {submission.tcNummer}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {submission.vorname} {submission.nachname}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm">
                         {submission.telefon || "-"}
@@ -917,6 +960,139 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Fullscreen Modal */}
+      {isFullscreen && (
+        <div className="fixed inset-0 z-[100] bg-gray-900/50 flex items-center justify-center">
+          <div className="bg-white w-full h-full max-h-[100vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+              <h2 className="text-lg font-bold">Gewährleistungsanfragen - Vollbildansicht</h2>
+              <Button onClick={() => setIsFullscreen(false)} variant="outline">
+                <X className="w-4 h-4 mr-2" />
+                Schließen
+              </Button>
+            </div>
+
+            {/* Scrollbare Tabelle */}
+            <div className="flex-1 overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="whitespace-nowrap">Nr</TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
+                      onClick={() => handleSort("tcNummer")}
+                    >
+                      TC-N <SortIcon field="tcNummer" />
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
+                      onClick={() => handleSort("name")}
+                    >
+                      Name <SortIcon field="name" />
+                    </TableHead>
+                    <TableHead className="whitespace-nowrap">Telefon</TableHead>
+                    <TableHead className="whitespace-nowrap">Haustyp</TableHead>
+                    <TableHead>Straße und Ort</TableHead>
+                    <TableHead className="whitespace-nowrap">Bauleitung</TableHead>
+                    <TableHead className="whitespace-nowrap">Abnahme</TableHead>
+                    <TableHead className="whitespace-nowrap">Verantwortliche/r</TableHead>
+                    <TableHead className="whitespace-nowrap">Gewerk</TableHead>
+                    <TableHead className="whitespace-nowrap">Firma</TableHead>
+                    <TableHead className="whitespace-nowrap">1. Frist</TableHead>
+                    <TableHead className="whitespace-nowrap">2. Frist</TableHead>
+                    <TableHead className="whitespace-nowrap">Erledigt</TableHead>
+                    <TableHead>Beschreibung</TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
+                      onClick={() => handleSort("status")}
+                    >
+                      Status <SortIcon field="status" />
+                    </TableHead>
+                    <TableHead className="text-right">Aktionen</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAndSortedSubmissions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={17} className="text-center py-12 text-gray-500">
+                        {submissions.length === 0
+                          ? "Noch keine Anfragen vorhanden"
+                          : "Keine Anfragen gefunden für die aktuellen Filter"}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredAndSortedSubmissions.map((submission, index) => (
+                      <TableRow key={submission.id} className={rowBgColors[submission.status] + " hover:opacity-80"}>
+                        <TableCell className="whitespace-nowrap font-medium">{index + 1}</TableCell>
+                        <TableCell className="font-mono text-sm whitespace-nowrap">{submission.tcNummer}</TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {submission.vorname} {submission.nachname}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">{submission.telefon || "-"}</TableCell>
+                        <TableCell className="whitespace-nowrap">{submission.haustyp || "-"}</TableCell>
+                        <TableCell className="text-sm">
+                          <div>{submission.strasseHausnummer}</div>
+                          <div className="text-gray-500">{submission.plz} {submission.ort}</div>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">{submission.bauleitung || "-"}</TableCell>
+                        <TableCell className="whitespace-nowrap">{submission.abnahme || "-"}</TableCell>
+                        <TableCell className="whitespace-nowrap">{submission.verantwortlicher || "-"}</TableCell>
+                        <TableCell className="whitespace-nowrap">{submission.gewerk || "-"}</TableCell>
+                        <TableCell className="whitespace-nowrap">{submission.firma || "-"}</TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">
+                          {submission.ersteFrist ? formatDate(submission.ersteFrist) : "-"}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">
+                          {submission.zweiteFrist ? formatDate(submission.zweiteFrist) : "-"}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">
+                          {submission.erledigtAm ? formatDate(submission.erledigtAm) : "-"}
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">{submission.beschreibung || "-"}</TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${statusColors[submission.status] || statusColors.Offen}`}
+                          >
+                            {submission.status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setSelectedSubmission(submission)}
+                              title="Details anzeigen"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(submission)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              title="Löschen"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Footer mit Info */}
+            <div className="p-3 border-t bg-gray-50 text-sm text-gray-600 text-center">
+              {filteredAndSortedSubmissions.length} von {submissions.length} Anzeigen • ESC zum Schließen
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
