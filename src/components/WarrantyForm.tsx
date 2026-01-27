@@ -219,7 +219,6 @@ export default function WarrantyForm() {
                 name="vorname"
                 value={formData.vorname}
                 onChange={handleInputChange}
-                placeholder="Max"
                 className={errors.vorname ? "border-red-500" : ""}
                 aria-invalid={!!errors.vorname}
                 aria-describedby={errors.vorname ? "vorname-error" : undefined}
@@ -241,7 +240,6 @@ export default function WarrantyForm() {
                 name="nachname"
                 value={formData.nachname}
                 onChange={handleInputChange}
-                placeholder="Mustermann"
                 className={errors.nachname ? "border-red-500" : ""}
                 aria-invalid={!!errors.nachname}
                 aria-describedby={errors.nachname ? "nachname-error" : undefined}
@@ -265,7 +263,6 @@ export default function WarrantyForm() {
               name="strasseHausnummer"
               value={formData.strasseHausnummer}
               onChange={handleInputChange}
-              placeholder="Musterstraße 123"
               className={errors.strasseHausnummer ? "border-red-500" : ""}
               aria-invalid={!!errors.strasseHausnummer}
               aria-describedby={errors.strasseHausnummer ? "strasse-error" : undefined}
@@ -288,7 +285,6 @@ export default function WarrantyForm() {
                 name="plz"
                 value={formData.plz}
                 onChange={handleInputChange}
-                placeholder="12345"
                 maxLength={5}
                 className={errors.plz ? "border-red-500" : ""}
                 aria-invalid={!!errors.plz}
@@ -311,7 +307,6 @@ export default function WarrantyForm() {
                 name="ort"
                 value={formData.ort}
                 onChange={handleInputChange}
-                placeholder="Musterstadt"
                 className={errors.ort ? "border-red-500" : ""}
                 aria-invalid={!!errors.ort}
                 aria-describedby={errors.ort ? "ort-error" : undefined}
@@ -335,7 +330,6 @@ export default function WarrantyForm() {
               name="tcNummer"
               value={formData.tcNummer}
               onChange={handleInputChange}
-              placeholder="BV-123456"
               className={errors.tcNummer ? "border-red-500" : ""}
               aria-invalid={!!errors.tcNummer}
               aria-describedby={errors.tcNummer ? "bv-error" : undefined}
@@ -363,7 +357,6 @@ export default function WarrantyForm() {
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="max.mustermann@email.de"
                 className={errors.email ? "border-red-500" : ""}
                 aria-invalid={!!errors.email}
                 aria-describedby={errors.email ? "email-error" : undefined}
@@ -386,7 +379,6 @@ export default function WarrantyForm() {
                 type="tel"
                 value={formData.telefon}
                 onChange={handleInputChange}
-                placeholder="+49 123 456789"
                 className={errors.telefon ? "border-red-500" : ""}
                 aria-invalid={!!errors.telefon}
                 aria-describedby={errors.telefon ? "telefon-error" : undefined}

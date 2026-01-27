@@ -83,7 +83,6 @@ export default function CustomerLoginPage() {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="ihre@email.de"
                     value={formData.email}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -101,7 +100,6 @@ export default function CustomerLoginPage() {
                     id="tcNummer"
                     name="tcNummer"
                     type="text"
-                    placeholder="BV-12345"
                     value={formData.tcNummer}
                     onChange={handleInputChange}
                     className="pl-10"
