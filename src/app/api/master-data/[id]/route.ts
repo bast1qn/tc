@@ -6,10 +6,10 @@ export type MasterDataType = 'bauleitung' | 'verantwortlicher' | 'gewerk' | 'fir
 // DELETE master data item (soft delete by setting active = false)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') as MasterDataType | null;
 
