@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AdminRole } from "@prisma/client";
 
 export type MasterDataType = 'bauleitung' | 'verantwortlicher' | 'gewerk' | 'firma';
 
@@ -24,9 +25,10 @@ interface MasterDataItem {
 
 interface MasterDataManagementProps {
   onClose?: () => void;
+  currentRole?: AdminRole;
 }
 
-export default function MasterDataManagement({ onClose }: MasterDataManagementProps) {
+export default function MasterDataManagement({ onClose, currentRole }: MasterDataManagementProps) {
   const [activeTab, setActiveTab] = useState<MasterDataType>('bauleitung');
   const [data, setData] = useState<Record<MasterDataType, MasterDataItem[]>>({
     bauleitung: [],
@@ -38,6 +40,9 @@ export default function MasterDataManagement({ onClose }: MasterDataManagementPr
   const [newItemName, setNewItemName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  // Nur Admins dürfen Stammdaten ändern
+  const canEdit = currentRole === AdminRole.ADMIN;
 
   const loadData = async () => {
     setIsLoading(true);
@@ -129,6 +134,19 @@ export default function MasterDataManagement({ onClose }: MasterDataManagementPr
         <CardTitle>Stammdaten verwalten</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Permission warning for non-admins */}
+        {!canEdit && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-amber-800">Nur Admins dürfen Stammdaten ändern</p>
+              <p className="text-sm text-amber-700 mt-1">
+                Sie können die Stammdaten nur anzeigen, aber nicht hinzufügen oder löschen.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6">
           {(Object.keys(TYPE_LABELS) as MasterDataType[]).map((type) => (
@@ -149,19 +167,21 @@ export default function MasterDataManagement({ onClose }: MasterDataManagementPr
           </div>
         ) : (
           <>
-            {/* Add new item */}
+            {/* Add new item - disabled for non-admins */}
             <div className="flex gap-2 mb-6">
               <Input
                 placeholder={`Neuen ${TYPE_LABELS[activeTab]} hinzufügen...`}
                 value={newItemName}
                 onChange={(e) => setNewItemName(e.target.value)}
                 onKeyPress={handleKeyPress}
-                disabled={isAdding}
+                disabled={isAdding || !canEdit}
+                className={!canEdit ? "bg-gray-100" : ""}
               />
               <Button
                 onClick={handleAdd}
-                disabled={!newItemName.trim() || isAdding}
+                disabled={!newItemName.trim() || isAdding || !canEdit}
                 className="bg-[#E30613] hover:bg-[#C00510]"
+                title={!canEdit ? "Nur Admins dürfen Stammdaten hinzufügen" : undefined}
               >
                 {isAdding ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -188,8 +208,9 @@ export default function MasterDataManagement({ onClose }: MasterDataManagementPr
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(item.id)}
-                      disabled={isDeleting === item.id}
+                      disabled={isDeleting === item.id || !canEdit}
                       className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      title={!canEdit ? "Nur Admins dürfen Stammdaten löschen" : undefined}
                     >
                       {isDeleting === item.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />

@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database';
+import { requireAdminRole } from '@/lib/auth/admin';
 
 export type MasterDataType = 'bauleitung' | 'verantwortlicher' | 'gewerk' | 'firma';
 
-// DELETE master data item (soft delete by setting active = false)
+// DELETE master data item (soft delete by setting active = false) - Admin only
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Verify admin session - only admins can delete master data
+    const sessionResult = await requireAdminRole();
+
+    if (!sessionResult.valid || !sessionResult.admin) {
+      return NextResponse.json(
+        { error: 'Nur Admins dürfen Stammdaten löschen' },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') as MasterDataType | null;

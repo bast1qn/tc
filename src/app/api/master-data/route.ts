@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database';
+import { requireAdminRole } from '@/lib/auth/admin';
 
 export type MasterDataType = 'bauleitung' | 'verantwortlicher' | 'gewerk' | 'firma';
 
@@ -40,9 +41,19 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST new master data item
+// POST new master data item (Admin only)
 export async function POST(request: NextRequest) {
   try {
+    // Verify admin session - only admins can add master data
+    const sessionResult = await requireAdminRole();
+
+    if (!sessionResult.valid || !sessionResult.admin) {
+      return NextResponse.json(
+        { error: 'Nur Admins dürfen Stammdaten hinzufügen' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { type, name } = body;
 

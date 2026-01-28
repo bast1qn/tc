@@ -144,7 +144,7 @@ export default function AdminDashboardClient() {
       ) : activeTab === "users" ? (
         <UserManagement currentUserId={session.adminId} currentRole={session.role} />
       ) : (
-        <MasterDataManagement />
+        <MasterDataManagement currentRole={session.role} />
       )}
     </div>
   );
