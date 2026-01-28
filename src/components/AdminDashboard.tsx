@@ -424,14 +424,15 @@ export default function AdminDashboard() {
     }
 
     // Filter by search term
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
+    if (debouncedSearchTerm) {
+      const term = debouncedSearchTerm.toLowerCase();
       result = result.filter(
         (s) =>
           s.vorname.toLowerCase().includes(term) ||
           s.nachname.toLowerCase().includes(term) ||
-          s.email.toLowerCase().includes(term) ||
           s.tcNummer.toLowerCase().includes(term) ||
+          s.strasseHausnummer.toLowerCase().includes(term) ||
+          s.plz.toLowerCase().includes(term) ||
           s.ort.toLowerCase().includes(term) ||
           s.beschreibung.toLowerCase().includes(term)
       );
