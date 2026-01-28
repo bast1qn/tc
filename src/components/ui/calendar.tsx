@@ -144,6 +144,7 @@ interface DatePickerProps {
   onChange?: (date: Date | undefined) => void
   placeholder?: string
   className?: string
+  highZIndex?: boolean
 }
 
 export function DatePicker({
@@ -151,6 +152,7 @@ export function DatePicker({
   onChange,
   placeholder = "DD.MM.YYYY",
   className,
+  highZIndex = false,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -175,7 +177,7 @@ export function DatePicker({
           {value ? format(value, "dd.MM.yyyy") : placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0" align="start" highZIndex={highZIndex}>
         <Calendar
           mode="single"
           selected={value}

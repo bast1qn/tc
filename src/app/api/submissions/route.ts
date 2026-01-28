@@ -8,6 +8,9 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const search = searchParams.get('search');
+    const jahr = searchParams.get('jahr');
+    const verantwortlicher = searchParams.get('verantwortlicher');
+    const firma = searchParams.get('firma');
     const sortBy = searchParams.get('sortBy') || 'timestamp';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
@@ -22,6 +25,35 @@ export async function GET(request: NextRequest) {
         'Mangel abgelehnt': Status.MAGEL_ABGELEHNT,
       };
       where.status = statusMapping[status];
+    }
+
+    // Filter by Jahr (year from timestamp)
+    if (jahr && jahr !== 'Alle') {
+      const year = parseInt(jahr);
+      where.timestamp = {
+        gte: new Date(`${year}-01-01`),
+        lt: new Date(`${year + 1}-01-01`),
+      };
+    }
+
+    // Filter by Verantwortlicher (by name, then convert to ID)
+    if (verantwortlicher && verantwortlicher !== 'Alle') {
+      const verantworlicherEntry = await prisma.verantwortlicher.findFirst({
+        where: { name: verantwortlicher, active: true },
+      });
+      if (verantworlicherEntry) {
+        where.verantwortlicherId = verantworlicherEntry.id;
+      }
+    }
+
+    // Filter by Firma (by name, then convert to ID)
+    if (firma && firma !== 'Alle') {
+      const firmaEntry = await prisma.firma.findFirst({
+        where: { name: firma, active: true },
+      });
+      if (firmaEntry) {
+        where.firmaId = firmaEntry.id;
+      }
     }
 
     if (search) {

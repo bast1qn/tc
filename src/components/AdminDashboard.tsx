@@ -165,6 +165,9 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 400);
   const [statusFilter, setStatusFilter] = useState<WarrantyStatus | "Alle">("Alle");
+  const [jahrFilter, setJahrFilter] = useState<string>("Alle");
+  const [verantwortlicherFilter, setVerantwortlicherFilter] = useState<string>("Alle");
+  const [firmaFilter, setFirmaFilter] = useState<string>("Alle");
   const [sortField, setSortField] = useState<SortField>("timestamp");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [selectedSubmission, setSelectedSubmission] = useState<WarrantySubmission | null>(null);
@@ -210,6 +213,9 @@ export default function AdminDashboard() {
       // Suche wird client-seitig durchgeführt, daher kein search-Parameter an API
       const data = await submissionsAPI.getAll({
         status: statusFilter === "Alle" ? undefined : statusFilter,
+        jahr: jahrFilter === "Alle" ? undefined : jahrFilter,
+        verantwortlicherId: verantwortlicherFilter === "Alle" ? undefined : verantwortlicherFilter,
+        firmaId: firmaFilter === "Alle" ? undefined : firmaFilter,
         sortBy: sortField,
         sortOrder: sortDirection,
       });
@@ -225,7 +231,7 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, sortField, sortDirection]);
+  }, [statusFilter, jahrFilter, verantwortlicherFilter, firmaFilter, sortField, sortDirection]);
 
   const loadMasterData = useCallback(async () => {
     try {
@@ -674,15 +680,61 @@ export default function AdminDashboard() {
                 value={statusFilter}
                 onValueChange={(value) => setStatusFilter(value as WarrantyStatus | "Alle")}
               >
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Status filtern" />
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent highZIndex={isFullscreen}>
                   <SelectItem value="Alle">Alle Status</SelectItem>
                   <SelectItem value="Offen">Offen</SelectItem>
                   <SelectItem value="In Bearbeitung">In Bearbeitung</SelectItem>
                   <SelectItem value="Erledigt">Erledigt</SelectItem>
                   <SelectItem value="Mangel abgelehnt">Mangel abgelehnt</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={jahrFilter}
+                onValueChange={setJahrFilter}
+              >
+                <SelectTrigger className="w-full sm:w-[100px]">
+                  <SelectValue placeholder="Jahr" />
+                </SelectTrigger>
+                <SelectContent highZIndex={isFullscreen}>
+                  <SelectItem value="Alle">Alle Jahre</SelectItem>
+                  {Array.from(
+                    new Set(allSubmissions.map(s => new Date(s.timestamp).getFullYear()))
+                  )
+                    .sort((a, b) => b - a)
+                    .map(year => (
+                      <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={verantwortlicherFilter}
+                onValueChange={setVerantwortlicherFilter}
+              >
+                <SelectTrigger className="w-full sm:w-[160px]">
+                  <SelectValue placeholder="Verantwortlicher" />
+                </SelectTrigger>
+                <SelectContent highZIndex={isFullscreen}>
+                  <SelectItem value="Alle">Alle Verantwortlichen</SelectItem>
+                  {masterData.verantwortlicher.map(v => (
+                    <SelectItem key={v} value={v}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={firmaFilter}
+                onValueChange={setFirmaFilter}
+              >
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue placeholder="Firma" />
+                </SelectTrigger>
+                <SelectContent highZIndex={isFullscreen}>
+                  <SelectItem value="Alle">Alle Firmen</SelectItem>
+                  {masterData.firma.map(f => (
+                    <SelectItem key={f} value={f}>{f}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -1255,7 +1307,7 @@ export default function AdminDashboard() {
                             <SelectTrigger className="w-[140px]">
                               <SelectValue placeholder="Auswählen..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent highZIndex={isFullscreen}>
                               {masterData.bauleitung.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
@@ -1270,6 +1322,7 @@ export default function AdminDashboard() {
                             onChange={(date) => handleAbnahmeChange(submission.id, date)}
                             placeholder="Auswählen..."
                             className="w-[120px]"
+                            highZIndex={isFullscreen}
                           />
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
@@ -1282,7 +1335,7 @@ export default function AdminDashboard() {
                             <SelectTrigger className="w-[140px]">
                               <SelectValue placeholder="Auswählen..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent highZIndex={isFullscreen}>
                               {masterData.verantwortlicher.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
@@ -1301,7 +1354,7 @@ export default function AdminDashboard() {
                             <SelectTrigger className="w-[120px]">
                               <SelectValue placeholder="Auswählen..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent highZIndex={isFullscreen}>
                               {masterData.gewerk.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
@@ -1320,7 +1373,7 @@ export default function AdminDashboard() {
                             <SelectTrigger className="w-[130px]">
                               <SelectValue placeholder="Auswählen..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent highZIndex={isFullscreen}>
                               {masterData.firma.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
@@ -1335,6 +1388,7 @@ export default function AdminDashboard() {
                             onChange={(date) => handleFristChange(submission.id, 'ersteFrist', date)}
                             placeholder="Auswählen..."
                             className="w-[120px]"
+                            highZIndex={isFullscreen}
                           />
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
@@ -1343,6 +1397,7 @@ export default function AdminDashboard() {
                             onChange={(date) => handleFristChange(submission.id, 'zweiteFrist', date)}
                             placeholder="Auswählen..."
                             className="w-[120px]"
+                            highZIndex={isFullscreen}
                           />
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
@@ -1351,6 +1406,7 @@ export default function AdminDashboard() {
                             onChange={(date) => handleErledigtAmChange(submission.id, date)}
                             placeholder="Auswählen..."
                             className="w-[120px]"
+                            highZIndex={isFullscreen}
                           />
                         </TableCell>
                         <TableCell className="max-w-xs">
@@ -1371,7 +1427,7 @@ export default function AdminDashboard() {
                             <SelectTrigger className={`w-[140px] ${statusColors[submission.status]}`}>
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent highZIndex={isFullscreen}>
                               <SelectItem value="Offen">Offen</SelectItem>
                               <SelectItem value="In Bearbeitung">In Bearbeitung</SelectItem>
                               <SelectItem value="Erledigt">Erledigt</SelectItem>

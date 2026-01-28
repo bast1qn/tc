@@ -27,12 +27,18 @@ async function fetchAPI<T>(url: string, options?: RequestInit): Promise<T> {
 export const submissionsAPI = {
   getAll: (params?: {
     status?: WarrantyStatus | 'Alle';
+    jahr?: string;
+    verantwortlicherId?: string;
+    firmaId?: string;
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
   }) => {
     const searchParams = new URLSearchParams();
     if (params?.status && params.status !== 'Alle') searchParams.set('status', params.status);
+    if (params?.jahr && params.jahr !== 'Alle') searchParams.set('jahr', params.jahr);
+    if (params?.verantwortlicherId && params.verantwortlicherId !== 'Alle') searchParams.set('verantwortlicher', params.verantwortlicherId);
+    if (params?.firmaId && params.firmaId !== 'Alle') searchParams.set('firma', params.firmaId);
     if (params?.search) searchParams.set('search', params.search);
     if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
     if (params?.sortOrder) searchParams.set('sortOrder', params.sortOrder);
