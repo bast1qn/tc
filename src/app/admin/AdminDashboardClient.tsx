@@ -78,52 +78,27 @@ export default function AdminDashboardClient() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <div className="flex items-center gap-3 mt-2">
-            <p className="text-gray-600">
-              Eingeloggt als <span className="font-semibold">{session.username}</span>
-            </p>
-            <Badge
-              variant="outline"
-              className={
-                session.role === AdminRole.ADMIN
-                  ? "bg-blue-100 text-blue-800 border-blue-200"
-                  : "bg-green-100 text-green-800 border-green-200"
-              }
-            >
-              <Shield className="w-3 h-3 mr-1" />
-              {session.role === AdminRole.ADMIN ? "Admin" : "Mitarbeiter"}
-            </Badge>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <div className="flex items-center gap-3 mt-2">
+              <p className="text-gray-600">
+                Eingeloggt als <span className="font-semibold">{session.username}</span>
+              </p>
+              <Badge
+                variant="outline"
+                className={
+                  session.role === AdminRole.ADMIN
+                    ? "bg-blue-100 text-blue-800 border-blue-200"
+                    : "bg-green-100 text-green-800 border-green-200"
+                }
+              >
+                <Shield className="w-3 h-3 mr-1" />
+                {session.role === AdminRole.ADMIN ? "Admin" : "Mitarbeiter"}
+              </Badge>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              if (activeTab === "submissions") setActiveTab("users");
-              else if (activeTab === "users") setActiveTab("masterdata");
-              else setActiveTab("submissions");
-            }}
-          >
-            {activeTab === "submissions" ? (
-              <>
-                <Users className="w-4 h-4 mr-2" />
-                Benutzer
-              </>
-            ) : activeTab === "users" ? (
-              <>
-                <Settings className="w-4 h-4 mr-2" />
-                Stammdaten
-              </>
-            ) : (
-              <>
-                <FileText className="w-4 h-4 mr-2" />
-                Mängel
-              </>
-            )}
-          </Button>
           <Button
             variant="outline"
             onClick={handleLogout}
@@ -131,6 +106,34 @@ export default function AdminDashboardClient() {
           >
             <LogOut className="w-4 h-4 mr-2" />
             Abmelden
+          </Button>
+        </div>
+
+        {/* Tab Buttons - Side by Side */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={activeTab === "submissions" ? "default" : "outline"}
+            onClick={() => setActiveTab("submissions")}
+            className={activeTab === "submissions" ? "bg-[#E30613] hover:bg-[#C00510] text-white" : "border-[#E30613] text-[#E30613] hover:bg-[#E30613] hover:text-white"}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Mängel
+          </Button>
+          <Button
+            variant={activeTab === "masterdata" ? "default" : "outline"}
+            onClick={() => setActiveTab("masterdata")}
+            className={activeTab === "masterdata" ? "bg-[#E30613] hover:bg-[#C00510] text-white" : "border-[#E30613] text-[#E30613] hover:bg-[#E30613] hover:text-white"}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Stammdaten
+          </Button>
+          <Button
+            variant={activeTab === "users" ? "default" : "outline"}
+            onClick={() => setActiveTab("users")}
+            className={activeTab === "users" ? "bg-[#E30613] hover:bg-[#C00510] text-white" : "border-[#E30613] text-[#E30613] hover:bg-[#E30613] hover:text-white"}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Benutzer
           </Button>
         </div>
       </div>
