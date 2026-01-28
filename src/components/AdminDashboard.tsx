@@ -423,9 +423,10 @@ export default function AdminDashboard() {
       result = result.filter((s) => s.status === statusFilter);
     }
 
-    // Filter by search term
-    if (debouncedSearchTerm) {
-      const term = debouncedSearchTerm.toLowerCase();
+    // Filter by search term (use searchTerm directly when empty for instant reset)
+    const effectiveSearchTerm = searchTerm === "" ? "" : debouncedSearchTerm;
+    if (effectiveSearchTerm) {
+      const term = effectiveSearchTerm.toLowerCase();
       result = result.filter(
         (s) =>
           s.vorname.toLowerCase().includes(term) ||
