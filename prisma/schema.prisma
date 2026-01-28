@@ -22,11 +22,11 @@ model Submission {
   telefon             String
   beschreibung        String     @db.Text
   haustyp             String?
-  bauleitung          String?
+  bauleitungId        String?
   abnahme             String?
-  verantwortlicher    String?
-  gewerk              String?
-  firma               String?
+  verantwortlicherId  String?
+  gewerkId            String?
+  firmaId             String?
   dsgvoAccepted       Boolean    @default(true)
   status              Status     @default(OFFEN)
   ersteFrist          DateTime?
@@ -38,6 +38,10 @@ model Submission {
 
   files               File[]
   customer            Customer?
+  bauleitung          Bauleitung? @relation(fields: [bauleitungId], references: [id])
+  verantwortlicher    Verantwortlicher? @relation(fields: [verantwortlicherId], references: [id])
+  gewerk              Gewerk? @relation(fields: [gewerkId], references: [id])
+  firma               Firma? @relation(fields: [firmaId], references: [id])
 
   @@index([tcNummer])
   @@index([status])
@@ -97,6 +101,51 @@ model ActivityLog {
   @@index([userId])
   @@index([entityType])
   @@index([createdAt(sort: Desc)])
+}
+
+// Master data for dropdown options
+model Bauleitung {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  submissions Submission[]
+
+  @@index([active])
+}
+
+model Verantwortlicher {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  submissions Submission[]
+
+  @@index([active])
+}
+
+model Gewerk {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  submissions Submission[]
+
+  @@index([active])
+}
+
+model Firma {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  submissions Submission[]
+
+  @@index([active])
 }
 
 enum UserRole {

@@ -38,7 +38,13 @@ export async function GET(request: NextRequest) {
 
     const submissions = await prisma.submission.findMany({
       where,
-      include: { files: true },
+      include: {
+        files: true,
+        bauleitung: { select: { name: true } },
+        verantwortlicher: { select: { name: true } },
+        gewerk: { select: { name: true } },
+        firma: { select: { name: true } },
+      },
       orderBy: { [sortBy]: sortOrder },
     });
 
@@ -53,6 +59,10 @@ export async function GET(request: NextRequest) {
     // Transform to match frontend types
     const transformed = submissions.map(s => ({
       ...s,
+      bauleitung: s.bauleitung?.name || null,
+      verantwortlicher: s.verantwortlicher?.name || null,
+      gewerk: s.gewerk?.name || null,
+      firma: s.firma?.name || null,
       timestamp: s.timestamp.toISOString(),
       status: statusReverseMapping[s.status] || s.status,
       ersteFrist: s.ersteFrist?.toISOString() || null,

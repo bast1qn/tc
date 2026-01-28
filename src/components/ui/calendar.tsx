@@ -152,8 +152,16 @@ export function DatePicker({
   placeholder = "DD.MM.YYYY",
   className,
 }: DatePickerProps) {
+  const [open, setOpen] = React.useState(false)
+
+  const handleSelect = (date: Date | undefined) => {
+    onChange?.(date)
+    // Kalender automatisch schließen nach Auswahl
+    setOpen(false)
+  }
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
@@ -171,8 +179,8 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={value}
-          onSelect={onChange}
-          initialFocus
+          onSelect={handleSelect}
+          initialFocus={open}
         />
       </PopoverContent>
     </Popover>

@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Users, FileText, LogOut, Shield } from "lucide-react";
+import { Loader2, Users, FileText, LogOut, Shield, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import AdminDashboard from "@/components/AdminDashboard";
 import UserManagement from "@/components/UserManagement";
+import MasterDataManagement from "@/components/MasterDataManagement";
 import { AdminRole } from "@prisma/client";
 
 interface AdminSession {
@@ -21,7 +22,7 @@ export default function AdminDashboardClient() {
   const router = useRouter();
   const [session, setSession] = useState<AdminSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"submissions" | "users">("submissions");
+  const [activeTab, setActiveTab] = useState<"submissions" | "users" | "masterdata">("submissions");
 
   useEffect(() => {
     checkSession();
@@ -100,12 +101,21 @@ export default function AdminDashboardClient() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => setActiveTab(activeTab === "submissions" ? "users" : "submissions")}
+            onClick={() => {
+              if (activeTab === "submissions") setActiveTab("users");
+              else if (activeTab === "users") setActiveTab("masterdata");
+              else setActiveTab("submissions");
+            }}
           >
             {activeTab === "submissions" ? (
               <>
                 <Users className="w-4 h-4 mr-2" />
                 Benutzer
+              </>
+            ) : activeTab === "users" ? (
+              <>
+                <Settings className="w-4 h-4 mr-2" />
+                Stammdaten
               </>
             ) : (
               <>
@@ -126,7 +136,13 @@ export default function AdminDashboardClient() {
       </div>
 
       {/* Direct content display */}
-      {activeTab === "submissions" ? <AdminDashboard /> : <UserManagement currentUserId={session.adminId} currentRole={session.role} />}
+      {activeTab === "submissions" ? (
+        <AdminDashboard />
+      ) : activeTab === "users" ? (
+        <UserManagement currentUserId={session.adminId} currentRole={session.role} />
+      ) : (
+        <MasterDataManagement />
+      )}
     </div>
   );
 }

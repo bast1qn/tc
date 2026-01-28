@@ -157,72 +157,6 @@ function EditableCell({
   );
 }
 
-const BAULEITUNG_OPTIONS = [
-  "Daniel Mordass",
-  "Jens Kohnert",
-  "Markus Wünsch",
-];
-
-const VERANTWORTLICHER_OPTIONS = [
-  "Daniel Mordass",
-  "Jens Kohnert",
-  "Markus Wünsch",
-  "Thomas Wötzel",
-];
-
-const GEWERK_OPTIONS = [
-  "Außenputz",
-  "Balkone",
-  "Dachdeckung",
-  "Dachstuhl",
-  "Elektro",
-  "Estrich",
-  "Fenster",
-  "Fliesen",
-  "Heizung/Sanitär",
-  "Hochbau",
-  "Innenputz",
-  "Innentüren",
-  "Lüftung",
-  "Tiefbau",
-  "Treppen",
-  "Trockenbau",
-];
-
-const FIRMA_OPTIONS = [
-  "Arndt",
-  "Bauconstruct",
-  "Bauservice Zwenkau",
-  "Bergander",
-  "BMB",
-  "Breman",
-  "Cierpinski",
-  "Döhler",
-  "Enick",
-  "Estrichteam",
-  "Gaedtke",
-  "Guttenberger",
-  "Happke",
-  "Harrandt",
-  "HIB",
-  "HIT",
-  "Hoppe & Kant",
-  "Hüther",
-  "Kieburg",
-  "Krieg",
-  "Lunos",
-  "MoJé Bau",
-  "Pluggit",
-  "Raum + Areal",
-  "Salomon",
-  "Stoof",
-  "Streubel",
-  "TMP",
-  "Treppenmeister",
-  "UDIPAN",
-  "Werner",
-];
-
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState<WarrantySubmission[]>([]);
   const [allSubmissions, setAllSubmissions] = useState<WarrantySubmission[]>([]);
@@ -235,6 +169,19 @@ export default function AdminDashboard() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [selectedSubmission, setSelectedSubmission] = useState<WarrantySubmission | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<WarrantySubmission | null>(null);
+
+  // Master data from API
+  const [masterData, setMasterData] = useState<{
+    bauleitung: string[];
+    verantwortlicher: string[];
+    gewerk: string[];
+    firma: string[];
+  }>({
+    bauleitung: [],
+    verantwortlicher: [],
+    gewerk: [],
+    firma: [],
+  });
   const [isExporting, setIsExporting] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -280,9 +227,36 @@ export default function AdminDashboard() {
     }
   }, [statusFilter, sortField, sortDirection]);
 
+  const loadMasterData = useCallback(async () => {
+    try {
+      const response = await fetch('/api/master-data');
+      const data = await response.json();
+
+      setMasterData({
+        bauleitung: data.bauleitung?.map((item: any) => item.name) || [],
+        verantwortlicher: data.verantwortlicher?.map((item: any) => item.name) || [],
+        gewerk: data.gewerk?.map((item: any) => item.name) || [],
+        firma: data.firma?.map((item: any) => item.name) || [],
+      });
+    } catch (err) {
+      console.error('Failed to load master data:', err);
+      // Bei Fehler Fallback-Werte verwenden
+      setMasterData({
+        bauleitung: ["Daniel Mordass", "Jens Kohnert", "Markus Wünsch"],
+        verantwortlicher: ["Daniel Mordass", "Jens Kohnert", "Markus Wünsch", "Thomas Wötzel"],
+        gewerk: ["Außenputz", "Balkone", "Dachdeckung", "Dachstuhl", "Elektro", "Estrich", "Fenster", "Fliesen", "Heizung/Sanitär", "Hochbau", "Innenputz", "Innentüren", "Lüftung", "Tiefbau", "Treppen", "Trockenbau"],
+        firma: ["Arndt", "Bauconstruct", "Bauservice Zwenkau", "Bergander", "BMB", "Breman", "Cierpinski", "Döhler", "Enick", "Estrichteam", "Gaedtke", "Guttenberger", "Happke", "Harrandt", "HIB", "HIT", "Hoppe & Kant", "Hüther", "Kieburg", "Krieg", "Lunos", "MoJé Bau", "Pluggit", "Raum + Areal", "Salomon", "Stoof", "Streubel", "TMP", "Treppenmeister", "UDIPAN", "Werner"],
+      });
+    }
+  }, []);
+
   useEffect(() => {
     loadSubmissions();
   }, [loadSubmissions]);
+
+  useEffect(() => {
+    loadMasterData();
+  }, [loadMasterData]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -297,7 +271,7 @@ export default function AdminDashboard() {
   const handleStatusChange = async (id: string, newStatus: WarrantyStatus) => {
     // Optimistisches Update - sofortige UI-Aktualisierung
     const previousSubmissions = [...submissions];
-    const previousValue = submissions.find(s => s.id === id)?.status;
+    const submission = submissions.find(s => s.id === id);
 
     setSubmissions((prev) =>
       prev.map((s) => {
@@ -315,6 +289,13 @@ export default function AdminDashboard() {
 
     try {
       await submissionsAPI.updateStatus(id, newStatus);
+
+      // Wenn Status auf "Erledigt" geändert wurde und kein Datum existierte → Datum speichern
+      if (newStatus === "Erledigt" && !submission?.erledigtAm) {
+        const today = new Date().toISOString();
+        await submissionsAPI.updateField(id, 'erledigtAm', today);
+      }
+
       toast.success(`Status auf "${newStatus}" geändert`);
     } catch (err) {
       // Bei Fehler wiederherstellen
@@ -368,6 +349,45 @@ export default function AdminDashboard() {
     } catch (err) {
       setSubmissions(previousSubmissions);
       toast.error('Fehler beim Aktualisieren der Abnahme');
+    }
+  };
+
+  const handleErledigtAmChange = async (id: string, date: Date | undefined) => {
+    // Optimistisches Update
+    const previousSubmissions = [...submissions];
+    const submission = submissions.find(s => s.id === id);
+    const dateString = date ? date.toISOString() : null;
+
+    // Wenn Datum gesetzt wird und Status noch nicht "Erledigt" ist → Status ändern
+    const shouldUpdateStatus = dateString && submission?.status !== "Erledigt";
+
+    setSubmissions((prev) =>
+      prev.map((s) => {
+        if (s.id === id) {
+          const updates: Partial<WarrantySubmission> = { erledigtAm: dateString };
+          if (shouldUpdateStatus) {
+            updates.status = "Erledigt";
+          }
+          return { ...s, ...updates };
+        }
+        return s;
+      })
+    );
+
+    try {
+      // Datum aktualisieren
+      await submissionsAPI.updateField(id, 'erledigtAm', dateString);
+
+      // Falls Status geändert werden muss
+      if (shouldUpdateStatus) {
+        await submissionsAPI.updateStatus(id, "Erledigt");
+        toast.success('Erledigt-Datum gesetzt und Status auf "Erledigt" geändert');
+      } else {
+        toast.success(dateString ? 'Erledigt-Datum aktualisiert' : 'Erledigt-Datum entfernt');
+      }
+    } catch (err) {
+      setSubmissions(previousSubmissions);
+      toast.error('Fehler beim Aktualisieren des Erledigt-Datums');
     }
   };
 
@@ -822,7 +842,7 @@ export default function AdminDashboard() {
                             <SelectValue placeholder="Auswählen..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {BAULEITUNG_OPTIONS.map((option) => (
+                            {masterData.bauleitung.map((option) => (
                               <SelectItem key={option} value={option}>
                                 {option}
                               </SelectItem>
@@ -849,7 +869,7 @@ export default function AdminDashboard() {
                             <SelectValue placeholder="Auswählen..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {VERANTWORTLICHER_OPTIONS.map((option) => (
+                            {masterData.verantwortlicher.map((option) => (
                               <SelectItem key={option} value={option}>
                                 {option}
                               </SelectItem>
@@ -868,7 +888,7 @@ export default function AdminDashboard() {
                             <SelectValue placeholder="Auswählen..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {GEWERK_OPTIONS.map((option) => (
+                            {masterData.gewerk.map((option) => (
                               <SelectItem key={option} value={option}>
                                 {option}
                               </SelectItem>
@@ -887,7 +907,7 @@ export default function AdminDashboard() {
                             <SelectValue placeholder="Auswählen..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {FIRMA_OPTIONS.map((option) => (
+                            {masterData.firma.map((option) => (
                               <SelectItem key={option} value={option}>
                                 {option}
                               </SelectItem>
@@ -911,8 +931,13 @@ export default function AdminDashboard() {
                           className="w-[120px]"
                         />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {submission.erledigtAm ? formatTimestamp(submission.erledigtAm) : "-"}
+                      <TableCell className="whitespace-nowrap">
+                        <DatePicker
+                          value={submission.erledigtAm ? new Date(submission.erledigtAm) : undefined}
+                          onChange={(date) => handleErledigtAmChange(submission.id, date)}
+                          placeholder="Auswählen..."
+                          className="w-[120px]"
+                        />
                       </TableCell>
                       <TableCell className="max-w-xs">
                         <EditableCell
@@ -1231,7 +1256,7 @@ export default function AdminDashboard() {
                               <SelectValue placeholder="Auswählen..." />
                             </SelectTrigger>
                             <SelectContent>
-                              {BAULEITUNG_OPTIONS.map((option) => (
+                              {masterData.bauleitung.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
                                 </SelectItem>
@@ -1258,7 +1283,7 @@ export default function AdminDashboard() {
                               <SelectValue placeholder="Auswählen..." />
                             </SelectTrigger>
                             <SelectContent>
-                              {VERANTWORTLICHER_OPTIONS.map((option) => (
+                              {masterData.verantwortlicher.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
                                 </SelectItem>
@@ -1277,7 +1302,7 @@ export default function AdminDashboard() {
                               <SelectValue placeholder="Auswählen..." />
                             </SelectTrigger>
                             <SelectContent>
-                              {GEWERK_OPTIONS.map((option) => (
+                              {masterData.gewerk.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
                                 </SelectItem>
@@ -1296,7 +1321,7 @@ export default function AdminDashboard() {
                               <SelectValue placeholder="Auswählen..." />
                             </SelectTrigger>
                             <SelectContent>
-                              {FIRMA_OPTIONS.map((option) => (
+                              {masterData.firma.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
                                 </SelectItem>
@@ -1320,8 +1345,13 @@ export default function AdminDashboard() {
                             className="w-[120px]"
                           />
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
-                          {submission.erledigtAm ? formatDate(submission.erledigtAm) : "-"}
+                        <TableCell className="whitespace-nowrap">
+                          <DatePicker
+                            value={submission.erledigtAm ? new Date(submission.erledigtAm) : undefined}
+                            onChange={(date) => handleErledigtAmChange(submission.id, date)}
+                            placeholder="Auswählen..."
+                            className="w-[120px]"
+                          />
                         </TableCell>
                         <TableCell className="max-w-xs">
                           <EditableCell

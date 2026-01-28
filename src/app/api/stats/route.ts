@@ -3,12 +3,18 @@ import { prisma } from '@/lib/database';
 
 export async function GET() {
   try {
-    // Get all submissions
+    // Get all submissions with relations
     const submissions = await prisma.submission.findMany({
       select: {
-        gewerk: true,
-        bauleitung: true,
-        firma: true,
+        gewerk: {
+          select: { name: true },
+        },
+        bauleitung: {
+          select: { name: true },
+        },
+        firma: {
+          select: { name: true },
+        },
       },
     });
 
@@ -16,7 +22,8 @@ export async function GET() {
     const byGewerkMap = new Map<string, number>();
     submissions.forEach((s) => {
       if (s.gewerk) {
-        byGewerkMap.set(s.gewerk, (byGewerkMap.get(s.gewerk) || 0) + 1);
+        const name = s.gewerk.name;
+        byGewerkMap.set(name, (byGewerkMap.get(name) || 0) + 1);
       }
     });
 
@@ -28,7 +35,8 @@ export async function GET() {
     const byBauleitungMap = new Map<string, number>();
     submissions.forEach((s) => {
       if (s.bauleitung) {
-        byBauleitungMap.set(s.bauleitung, (byBauleitungMap.get(s.bauleitung) || 0) + 1);
+        const name = s.bauleitung.name;
+        byBauleitungMap.set(name, (byBauleitungMap.get(name) || 0) + 1);
       }
     });
 
@@ -41,11 +49,13 @@ export async function GET() {
 
     submissions.forEach((s) => {
       if (s.firma && s.gewerk) {
-        if (!byFirmaMap.has(s.gewerk)) {
-          byFirmaMap.set(s.gewerk, new Map());
+        const gewerkName = s.gewerk.name;
+        const firmaName = s.firma.name;
+        if (!byFirmaMap.has(gewerkName)) {
+          byFirmaMap.set(gewerkName, new Map());
         }
-        const firmaMap = byFirmaMap.get(s.gewerk)!;
-        firmaMap.set(s.firma, (firmaMap.get(s.firma) || 0) + 1);
+        const firmaMap = byFirmaMap.get(gewerkName)!;
+        firmaMap.set(firmaName, (firmaMap.get(firmaName) || 0) + 1);
       }
     });
 

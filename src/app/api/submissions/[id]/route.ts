@@ -79,21 +79,70 @@ export async function PATCH(
     }
 
     // Neue Felder aktualisieren
-    const fields = [
-      { key: 'bauleitung', value: bauleitung },
-      { key: 'verantwortlicher', value: verantwortlicher },
-      { key: 'gewerk', value: gewerk },
-      { key: 'firma', value: firma },
-      { key: 'abnahme', value: abnahme },
-    ];
-
-    for (const field of fields) {
-      if (field.value !== undefined) {
-        updateData[field.key] = field.value || null;
-        if (currentSubmission && currentSubmission[field.key as keyof typeof currentSubmission] !== field.value) {
-          changes.push({ field: field.key, oldValue: currentSubmission[field.key as keyof typeof currentSubmission], newValue: field.value });
+    // Für bauleitung, verantwortlicher, gewerk, firma: Name zu ID konvertieren
+    if (bauleitung !== undefined) {
+      if (bauleitung === null || bauleitung === '') {
+        updateData.bauleitungId = null;
+      } else {
+        const bauleitungEntry = await prisma.bauleitung.findFirst({
+          where: { name: bauleitung, active: true },
+        });
+        if (bauleitungEntry) {
+          updateData.bauleitungId = bauleitungEntry.id;
+        } else {
+          // Fallback: Name als String speichern wenn nicht gefunden
+          updateData.bauleitungId = null;
         }
       }
+    }
+
+    if (verantwortlicher !== undefined) {
+      if (verantwortlicher === null || verantwortlicher === '') {
+        updateData.verantwortlicherId = null;
+      } else {
+        const verantwortlicherEntry = await prisma.verantwortlicher.findFirst({
+          where: { name: verantwortlicher, active: true },
+        });
+        if (verantwortlicherEntry) {
+          updateData.verantwortlicherId = verantwortlicherEntry.id;
+        } else {
+          updateData.verantwortlicherId = null;
+        }
+      }
+    }
+
+    if (gewerk !== undefined) {
+      if (gewerk === null || gewerk === '') {
+        updateData.gewerkId = null;
+      } else {
+        const gewerkEntry = await prisma.gewerk.findFirst({
+          where: { name: gewerk, active: true },
+        });
+        if (gewerkEntry) {
+          updateData.gewerkId = gewerkEntry.id;
+        } else {
+          updateData.gewerkId = null;
+        }
+      }
+    }
+
+    if (firma !== undefined) {
+      if (firma === null || firma === '') {
+        updateData.firmaId = null;
+      } else {
+        const firmaEntry = await prisma.firma.findFirst({
+          where: { name: firma, active: true },
+        });
+        if (firmaEntry) {
+          updateData.firmaId = firmaEntry.id;
+        } else {
+          updateData.firmaId = null;
+        }
+      }
+    }
+
+    if (abnahme !== undefined) {
+      updateData.abnahme = abnahme || null;
     }
 
     const submission = await prisma.submission.update({

@@ -14,7 +14,13 @@ export async function GET(
     // Find submission by tracking token
     const submission = await prisma.submission.findUnique({
       where: { trackingToken: token },
-      include: { files: true },
+      include: {
+        files: true,
+        bauleitung: { select: { name: true } },
+        verantwortlicher: { select: { name: true } },
+        gewerk: { select: { name: true } },
+        firma: { select: { name: true } },
+      },
     });
 
     if (!submission) {
@@ -55,11 +61,11 @@ export async function GET(
           telefon: submission.telefon,
           beschreibung: submission.beschreibung,
           haustyp: submission.haustyp,
-          bauleitung: submission.bauleitung,
+          bauleitung: submission.bauleitung?.name || null,
           abnahme: submission.abnahme,
-          verantwortlicher: submission.verantwortlicher,
-          gewerk: submission.gewerk,
-          firma: submission.firma,
+          verantwortlicher: submission.verantwortlicher?.name || null,
+          gewerk: submission.gewerk?.name || null,
+          firma: submission.firma?.name || null,
           status: statusMapping[submission.status] || submission.status,
           ersteFrist: submission.ersteFrist?.toISOString() || null,
           zweiteFrist: submission.zweiteFrist?.toISOString() || null,
