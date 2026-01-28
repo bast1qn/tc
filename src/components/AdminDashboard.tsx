@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import {
@@ -72,6 +72,90 @@ const rowBgColors: Record<WarrantyStatus, string> = {
   Erledigt: "bg-green-50 hover:bg-green-100",
   "Mangel abgelehnt": "bg-gray-50 hover:bg-gray-100",
 };
+
+// Debounce Hook für Suche
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+// Inline Editierbares Textfeld
+function EditableCell({
+  value,
+  onChange,
+  field,
+  className = "",
+}: {
+  value: string;
+  onChange: (field: string, value: string) => void;
+  field: string;
+  className?: string;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
+
+  const handleSave = () => {
+    if (editValue !== value) {
+      onChange(field, editValue);
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSave();
+    } else if (e.key === 'Escape') {
+      setEditValue(value);
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <Input
+        ref={inputRef}
+        value={editValue}
+        onChange={(e) => setEditValue(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={handleKeyDown}
+        className={`h-8 px-2 ${className}`}
+        autoFocus
+      />
+    );
+  }
+
+  return (
+    <span
+      onClick={() => setIsEditing(true)}
+      className={`cursor-pointer hover:bg-gray-100 px-2 py-1 rounded -mx-2 block ${className}`}
+      title="Klicken zum Bearbeiten"
+    >
+      {value || "-"}
+    </span>
+  );
+}
 
 const BAULEITUNG_OPTIONS = [
   "Daniel Mordass",
@@ -145,6 +229,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 400);
   const [statusFilter, setStatusFilter] = useState<WarrantyStatus | "Alle">("Alle");
   const [sortField, setSortField] = useState<SortField>("timestamp");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -175,9 +260,9 @@ export default function AdminDashboard() {
     setIsLoading(true);
     setError(null);
     try {
+      // Suche wird client-seitig durchgeführt, daher kein search-Parameter an API
       const data = await submissionsAPI.getAll({
-        status: statusFilter,
-        search: searchTerm,
+        status: statusFilter === "Alle" ? undefined : statusFilter,
         sortBy: sortField,
         sortOrder: sortDirection,
       });
@@ -193,7 +278,7 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, searchTerm, sortField, sortDirection]);
+  }, [statusFilter, sortField, sortDirection]);
 
   useEffect(() => {
     loadSubmissions();
@@ -676,15 +761,53 @@ export default function AdminDashboard() {
                       <TableCell className="font-mono text-sm whitespace-nowrap">
                         {submission.tcNummer}
                       </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <EditableCell
+                            value={submission.vorname}
+                            onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                            field="vorname"
+                            className="text-sm"
+                          />
+                          <EditableCell
+                            value={submission.nachname}
+                            onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                            field="nachname"
+                            className="text-sm"
+                          />
+                        </div>
+                      </TableCell>
                       <TableCell className="whitespace-nowrap">
-                        {submission.vorname} {submission.nachname}
+                        <EditableCell
+                          value={submission.telefon}
+                          onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                          field="telefon"
+                          className="text-sm"
+                        />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {submission.telefon || "-"}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        <div>{submission.strasseHausnummer}</div>
-                        <div className="text-gray-500">{submission.plz} {submission.ort}</div>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <EditableCell
+                            value={submission.strasseHausnummer}
+                            onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                            field="strasseHausnummer"
+                            className="text-sm"
+                          />
+                          <div className="flex gap-1 items-center">
+                            <EditableCell
+                              value={submission.plz}
+                              onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                              field="plz"
+                              className="text-sm w-16"
+                            />
+                            <EditableCell
+                              value={submission.ort}
+                              onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                              field="ort"
+                              className="text-sm"
+                            />
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
                         <Select
@@ -789,8 +912,13 @@ export default function AdminDashboard() {
                       <TableCell className="whitespace-nowrap text-sm">
                         {submission.erledigtAm ? formatTimestamp(submission.erledigtAm) : "-"}
                       </TableCell>
-                      <TableCell className="max-w-xs truncate text-sm">
-                        {submission.beschreibung}
+                      <TableCell className="max-w-xs">
+                        <EditableCell
+                          value={submission.beschreibung}
+                          onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                          field="beschreibung"
+                          className="text-sm block truncate"
+                        />
                       </TableCell>
                       <TableCell>
                         <Select
@@ -1042,35 +1170,182 @@ export default function AdminDashboard() {
                         <TableCell className="whitespace-nowrap font-medium">{getStableNumber(submission.id, submission.timestamp)}</TableCell>
                         <TableCell className="whitespace-nowrap text-sm text-gray-500">{formatDate(submission.timestamp)}</TableCell>
                         <TableCell className="font-mono text-sm whitespace-nowrap">{submission.tcNummer}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <EditableCell
+                              value={submission.vorname}
+                              onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                              field="vorname"
+                              className="text-sm"
+                            />
+                            <EditableCell
+                              value={submission.nachname}
+                              onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                              field="nachname"
+                              className="text-sm"
+                            />
+                          </div>
+                        </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {submission.vorname} {submission.nachname}
+                          <EditableCell
+                            value={submission.telefon}
+                            onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                            field="telefon"
+                            className="text-sm"
+                          />
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">{submission.telefon || "-"}</TableCell>
-                        <TableCell className="text-sm">
-                          <div>{submission.strasseHausnummer}</div>
-                          <div className="text-gray-500">{submission.plz} {submission.ort}</div>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <EditableCell
+                              value={submission.strasseHausnummer}
+                              onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                              field="strasseHausnummer"
+                              className="text-sm"
+                            />
+                            <div className="flex gap-1 items-center">
+                              <EditableCell
+                                value={submission.plz}
+                                onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                                field="plz"
+                                className="text-sm w-16"
+                              />
+                              <EditableCell
+                                value={submission.ort}
+                                onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                                field="ort"
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">{submission.bauleitung || "-"}</TableCell>
-                        <TableCell className="whitespace-nowrap">{submission.abnahme || "-"}</TableCell>
-                        <TableCell className="whitespace-nowrap">{submission.verantwortlicher || "-"}</TableCell>
-                        <TableCell className="whitespace-nowrap">{submission.gewerk || "-"}</TableCell>
-                        <TableCell className="whitespace-nowrap">{submission.firma || "-"}</TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
-                          {submission.ersteFrist ? formatDate(submission.ersteFrist) : "-"}
+                        <TableCell className="whitespace-nowrap">
+                          <Select
+                            value={submission.bauleitung || ""}
+                            onValueChange={(value) =>
+                              handleFieldChange(submission.id, 'bauleitung', value)
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue placeholder="Auswählen..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {BAULEITUNG_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
-                          {submission.zweiteFrist ? formatDate(submission.zweiteFrist) : "-"}
+                        <TableCell className="whitespace-nowrap">
+                          <DatePicker
+                            value={submission.abnahme ? new Date(submission.abnahme) : undefined}
+                            onChange={(date) => handleAbnahmeChange(submission.id, date)}
+                            placeholder="Auswählen..."
+                            className="w-[120px]"
+                          />
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <Select
+                            value={submission.verantwortlicher || ""}
+                            onValueChange={(value) =>
+                              handleFieldChange(submission.id, 'verantwortlicher', value)
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue placeholder="Auswählen..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {VERANTWORTLICHER_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <Select
+                            value={submission.gewerk || ""}
+                            onValueChange={(value) =>
+                              handleFieldChange(submission.id, 'gewerk', value)
+                            }
+                          >
+                            <SelectTrigger className="w-[120px]">
+                              <SelectValue placeholder="Auswählen..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {GEWERK_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <Select
+                            value={submission.firma || ""}
+                            onValueChange={(value) =>
+                              handleFieldChange(submission.id, 'firma', value)
+                            }
+                          >
+                            <SelectTrigger className="w-[130px]">
+                              <SelectValue placeholder="Auswählen..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {FIRMA_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <DatePicker
+                            value={submission.ersteFrist ? new Date(submission.ersteFrist) : undefined}
+                            onChange={(date) => handleFristChange(submission.id, 'ersteFrist', date)}
+                            placeholder="Auswählen..."
+                            className="w-[120px]"
+                          />
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <DatePicker
+                            value={submission.zweiteFrist ? new Date(submission.zweiteFrist) : undefined}
+                            onChange={(date) => handleFristChange(submission.id, 'zweiteFrist', date)}
+                            placeholder="Auswählen..."
+                            className="w-[120px]"
+                          />
                         </TableCell>
                         <TableCell className="whitespace-nowrap text-sm">
                           {submission.erledigtAm ? formatDate(submission.erledigtAm) : "-"}
                         </TableCell>
-                        <TableCell className="max-w-xs truncate">{submission.beschreibung || "-"}</TableCell>
+                        <TableCell className="max-w-xs">
+                          <EditableCell
+                            value={submission.beschreibung}
+                            onChange={(field, value) => handleFieldChange(submission.id, field, value)}
+                            field="beschreibung"
+                            className="text-sm block truncate"
+                          />
+                        </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          <span
-                            className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${statusColors[submission.status] || statusColors.Offen}`}
+                          <Select
+                            value={submission.status}
+                            onValueChange={(value) =>
+                              handleStatusChange(submission.id, value as WarrantyStatus)
+                            }
                           >
-                            {submission.status}
-                          </span>
+                            <SelectTrigger className={`w-[140px] ${statusColors[submission.status]}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Offen">Offen</SelectItem>
+                              <SelectItem value="In Bearbeitung">In Bearbeitung</SelectItem>
+                              <SelectItem value="Erledigt">Erledigt</SelectItem>
+                              <SelectItem value="Mangel abgelehnt">Mangel abgelehnt</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
