@@ -141,6 +141,7 @@ const FIRMA_OPTIONS = [
 
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState<WarrantySubmission[]>([]);
+  const [allSubmissions, setAllSubmissions] = useState<WarrantySubmission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -161,6 +162,15 @@ export default function AdminDashboard() {
     });
   };
 
+  // Stabile Nummer basierend auf Erstellungsdatum (erste Meldung = Nr. 1)
+  const getStableNumber = (id: string, timestamp: string) => {
+    const sortedByTimestamp = [...allSubmissions].sort((a, b) =>
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+    const index = sortedByTimestamp.findIndex(s => s.id === id);
+    return index + 1;
+  };
+
   const loadSubmissions = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -172,6 +182,10 @@ export default function AdminDashboard() {
         sortOrder: sortDirection,
       });
       setSubmissions(data.submissions);
+
+      // Alle Einträge für stabile Nummer laden (ohne Filter)
+      const allData = await submissionsAPI.getAll({});
+      setAllSubmissions(allData.submissions);
     } catch (err) {
       const message = err instanceof APIError ? err.message : 'Fehler beim Laden der Daten';
       setError(message);
@@ -651,10 +665,10 @@ export default function AdminDashboard() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredAndSortedSubmissions.map((submission, index) => (
+                  filteredAndSortedSubmissions.map((submission) => (
                     <TableRow key={submission.id} className={rowBgColors[submission.status]}>
                       <TableCell className="whitespace-nowrap font-medium">
-                        {index + 1}
+                        {getStableNumber(submission.id, submission.timestamp)}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-gray-500">
                         {formatDate(submission.timestamp)}
@@ -1023,9 +1037,9 @@ export default function AdminDashboard() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredAndSortedSubmissions.map((submission, index) => (
+                    filteredAndSortedSubmissions.map((submission) => (
                       <TableRow key={submission.id} className={rowBgColors[submission.status] + " hover:opacity-80"}>
-                        <TableCell className="whitespace-nowrap font-medium">{index + 1}</TableCell>
+                        <TableCell className="whitespace-nowrap font-medium">{getStableNumber(submission.id, submission.timestamp)}</TableCell>
                         <TableCell className="whitespace-nowrap text-sm text-gray-500">{formatDate(submission.timestamp)}</TableCell>
                         <TableCell className="font-mono text-sm whitespace-nowrap">{submission.tcNummer}</TableCell>
                         <TableCell className="whitespace-nowrap">
