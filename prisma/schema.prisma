@@ -113,6 +113,7 @@ model Bauleitung {
   submissions Submission[]
 
   @@index([active])
+  @@map("_Bauleitung")
 }
 
 model Verantwortlicher {
@@ -124,6 +125,7 @@ model Verantwortlicher {
   submissions Submission[]
 
   @@index([active])
+  @@map("_Verantwortlicher")
 }
 
 model Gewerk {
@@ -135,6 +137,7 @@ model Gewerk {
   submissions Submission[]
 
   @@index([active])
+  @@map("_Gewerk")
 }
 
 model Firma {
@@ -146,6 +149,7 @@ model Firma {
   submissions Submission[]
 
   @@index([active])
+  @@map("_Firma")
 }
 
 enum UserRole {
